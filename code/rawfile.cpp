@@ -592,6 +592,12 @@ int RawFileClass::Write(void const * buffer, int size)
 	}
 	LastAccessType = WRITE;
 
+	// Open reports a file it could not create, but a caller may still reach here with no file,
+	// and bionic aborts on a null stream rather than ignoring it as the Windows CRT does.
+	if (Handle == nullptr) {
+		return(0);
+	}
+
 	clearerr(Handle);
 	byteswritten = fwrite(buffer, 1, size, Handle);
 	if (ferror(Handle)) {
