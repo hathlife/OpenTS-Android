@@ -108,7 +108,7 @@
 #include <memory>
 
 
-void Difficulty_Get(CCINIClass const & ini, DifficultyClass & diff, char const * section);
+static void Difficulty_Get(CCINIClass const & ini, DifficultyClass & diff, char const * section);
 
 /***********************************************************************************************
  * _Scale_To_256 -- Scales a 1..100 number into a 1..255 number.                               *

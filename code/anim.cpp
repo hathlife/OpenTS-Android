@@ -95,7 +95,9 @@
 #include "bench.hh"
 
 #include <algorithm>
+#if defined(_MSC_VER)
 #include <intrin.h>
+#endif
 
 
 // A random rate range applies only when it is set and its minimum is not above its maximum.

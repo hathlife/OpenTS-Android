@@ -44,6 +44,11 @@ foreach(f ${OPENTS_RAW})
     endif()
 endforeach()
 
+# Resource scripts need the Windows resource compiler.
+if(NOT WIN32)
+    list(FILTER OPENTS_SRC EXCLUDE REGEX "\\.rc$")
+endif()
+
 #
 # ---------------------------------------------------------
 # Create actual OpenTS executable (Win32)
@@ -87,6 +92,10 @@ set_target_properties(OpenTS PROPERTIES
 #
 message(STATUS "${PROJECT_NAME}: Applying compiler flags...")
 
+# Apple Clang takes CMake's per-configuration defaults. These spellings are MSVC's,
+# and clang-cl accepts them because it uses the MSVC frontend.
+set(OPENTS_COMPILE_OPTIONS "")
+if(MSVC)
 set(OPENTS_COMPILE_OPTIONS
 
     # ================= DEBUG =================
@@ -156,8 +165,12 @@ set_source_files_properties(${OPENTS_BGFX_SOURCES} PROPERTIES
         "${BGFX_ROOT}/include;${CMAKE_SOURCE_DIR}/thirdparty/bgfx.cmake/bx/include"
     COMPILE_DEFINITIONS
         "BX_CONFIG_DEBUG=$<IF:$<CONFIG:Debug>,1,$<BOOL:${BX_CONFIG_DEBUG}>>"
-    COMPILE_OPTIONS "/Zc:preprocessor"
 )
+if(MSVC)
+    set_source_files_properties(${OPENTS_BGFX_SOURCES} PROPERTIES
+        COMPILE_OPTIONS "/Zc:preprocessor"
+    )
+endif()
 
 # The frame quad's shaders come from the imgui example and the overlay's from the debug
 # draw example. The imgui example directory also holds an imgui.h that would shadow Dear
@@ -194,10 +207,14 @@ set_property(SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/ui/rml/rmltexture.cpp" APPEND P
 
 message(STATUS "${PROJECT_NAME}: Adding compilier definitions...")
 target_compile_definitions(OpenTS PRIVATE
-    WIN32
-    _WINDOWS
     NOMINMAX
 )
+if(WIN32)
+    target_compile_definitions(OpenTS PRIVATE
+        WIN32
+        _WINDOWS
+    )
+endif()
 
 #
 # ---------------------------------------------------------
@@ -325,7 +342,9 @@ set_property(GLOBAL PROPERTY VS_STARTUP_PROJECT OpenTS)
 # ---------------------------------------------------------
 # Add the .natvis file for Visual Studio debugging
 # ---------------------------------------------------------
-set(NATVIS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/sun.natvis")
-source_group("Natvis Files" FILES ${NATVIS_FILE})
-target_sources(OpenTS PRIVATE ${NATVIS_FILE})
-target_link_options(OpenTS PRIVATE "/NATVIS:${NATVIS_FILE}")
+if(MSVC)
+    set(NATVIS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/sun.natvis")
+    source_group("Natvis Files" FILES ${NATVIS_FILE})
+    target_sources(OpenTS PRIVATE ${NATVIS_FILE})
+    target_link_options(OpenTS PRIVATE "/NATVIS:${NATVIS_FILE}")
+endif()

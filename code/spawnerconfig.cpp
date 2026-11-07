@@ -9,6 +9,7 @@
 
 
 #include "spawnerconfig.h"
+#include "win.h"
 
 #include "ini.h"
 #include "launch/gamelaunch.h"

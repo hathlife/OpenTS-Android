@@ -37,7 +37,9 @@
 #include "win.h"
 
 #include <float.h>
+#if defined(_MSC_VER)
 #include <intrin.h>
+#endif
 #include <math.h>
 
 typedef union {
