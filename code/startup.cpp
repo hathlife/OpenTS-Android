@@ -763,9 +763,20 @@ int main(int argc, char ** supplied_argv)
 			Options.ScreenHeight = 480;
 		}
 
-		VisibleRect = Rect(0, 0, Options.ScreenWidth, Options.ScreenHeight);
-		VideoModeWidth = Options.ScreenWidth;
-		VideoModeHeight = Options.ScreenHeight;
+#if defined(__ANDROID__)
+		// The user interface documents are laid out at 640 by 400 and do not grow with the
+		// frame, so the frame keeps that size and the presenter scales it to the panel. A
+		// larger frame would show the same interface in a small part of the screen.
+		Options.ScreenWidth = 640;
+		Options.ScreenHeight = 400;
+#endif
+
+		int framewidth = Options.ScreenWidth;
+		int frameheight = Options.ScreenHeight;
+		Video_Frame_Size(Options.ScreenWidth, Options.ScreenHeight, framewidth, frameheight);
+		VisibleRect = Rect(0, 0, framewidth, frameheight);
+		VideoModeWidth = framewidth;
+		VideoModeHeight = frameheight;
 
 		if (!Game_Window_Open(Options.ScreenWidth, Options.ScreenHeight)) {
 			Main_Window_Error_Box(Fetch_String(TXT_SHORT_TITLE), Fetch_String(TXT_VIDEO_ERROR));

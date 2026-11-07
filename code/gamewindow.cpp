@@ -259,6 +259,17 @@ bool Game_Window_Open(int width, int height)
 		}
 	}
 
+#if defined(__ANDROID__)
+	// The game keeps its own render resolution, but the window has to cover the display or the
+	// frame lands in the middle of the screen at one pixel per pixel.
+	int screenwidth = 0;
+	int screenheight = 0;
+	if (Main_Window_Screen_Size(screenwidth, screenheight)) {
+		clientwidth = screenwidth;
+		clientheight = screenheight;
+	}
+#endif
+
 	std::vector<unsigned char> pixels;
 	int iconwidth = 0;
 	int iconheight = 0;

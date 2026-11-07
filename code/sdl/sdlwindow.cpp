@@ -451,6 +451,12 @@ bool Main_Window_Create(bool windowed, int width, int height, MainWindowIcon con
 	}
 
 	SDL_WindowFlags flags = SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+#if defined(__ANDROID__)
+	// Android reports a window size in points but a drawable in pixels, and the two disagree by
+	// the display density. Without high density the window size is the pixel size, so the frame
+	// the engine draws and the surface it draws into are measured the same way.
+	flags &= ~SDL_WINDOW_HIGH_PIXEL_DENSITY;
+#endif
 	flags |= windowed ? SDL_WINDOW_RESIZABLE : SDL_WINDOW_FULLSCREEN;
 
 	_Window = SDL_CreateWindow("Tiberian Sun", width, height, flags);
@@ -459,14 +465,21 @@ bool Main_Window_Create(bool windowed, int width, int height, MainWindowIcon con
 		return(false);
 	}
 
+#if defined(__ANDROID__)
+	// The Android window keeps the size it was created with; the surface only covers the screen
+	// once fullscreen is asked for here.
+	if (!windowed) {
+		SDL_SetWindowFullscreen(_Window, true);
+	}
+#endif
+
 	if (icon != nullptr) {
 		Set_Window_Icon(*icon);
 	}
 
 	if (windowed) {
-		float const density = Pixel_Density();
-		int const clientwidth = (int)std::lround(width / density);
-		int const clientheight = (int)std::lround(height / density);
+		int const clientwidth = Client_Points(width);
+		int const clientheight = Client_Points(height);
 		SDL_SetWindowSize(_Window, clientwidth, clientheight);
 
 		int top = 0;
@@ -514,9 +527,32 @@ NativeWindow Main_Window_Native(void)
 {
 	NativeWindow window = { NATIVE_WINDOW_DEFAULT, nullptr, nullptr };
 	if (_Window != nullptr) {
+#if defined(__APPLE__)
+		window.Handle = SDL_GetPointerProperty(SDL_GetWindowProperties(_Window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr);
+#elif defined(__ANDROID__)
+		window.Handle = SDL_GetPointerProperty(SDL_GetWindowProperties(_Window), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, nullptr);
+#elif defined(_WIN32)
 		window.Handle = SDL_GetPointerProperty(SDL_GetWindowProperties(_Window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
+#endif
 	}
 	return(window);
+}
+
+
+bool Main_Window_Screen_Size(int & width, int & height)
+{
+	if (!Start_SDL()) {
+		return(false);
+	}
+
+	SDL_DisplayID const display = SDL_GetPrimaryDisplay();
+	SDL_DisplayMode const * mode = SDL_GetCurrentDisplayMode(display);
+	if (mode == nullptr) {
+		return(false);
+	}
+	width = mode->w;
+	height = mode->h;
+	return(width > 0 && height > 0);
 }
 
 

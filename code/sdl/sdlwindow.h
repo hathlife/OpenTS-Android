@@ -37,6 +37,9 @@ void Main_Window_Set_Unattended(bool unattended);
 
 // Optional icon pixels are straight-alpha RGBA, top row first, borrowed only for this call.
 bool Main_Window_Create(bool windowed, int width, int height, MainWindowIcon const * icon = nullptr);
+
+// The display's size in pixels, for a window that has to cover it.
+bool Main_Window_Screen_Size(int & width, int & height);
 NativeWindow Main_Window_Native(void);
 bool Main_Window_Drawable_Size(int & width, int & height);
 bool Main_Window_Minimized(void);
