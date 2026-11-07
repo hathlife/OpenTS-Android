@@ -1,0 +1,25 @@
+// The Android shell for the OpenTS engine. The engine itself is built by the repository's
+// CMake configure with the NDK toolchain; Gradle only packages its library beside these
+// sources, which come from SDL's android-project template.
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.10.1'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.21'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+tasks.register('clean', Delete) {
+    delete rootProject.layout.buildDirectory
+}

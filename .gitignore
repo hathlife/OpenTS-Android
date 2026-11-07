@@ -30,6 +30,9 @@ cmake_install.cmake
 *.vcxproj.*
 .vs/
 
+# Gradle state, which the Android shell writes beside its build
+.gradle/
+
 # Editors and language servers
 *~
 *.bak
