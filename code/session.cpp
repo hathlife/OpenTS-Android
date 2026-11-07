@@ -60,6 +60,7 @@
 #include "deploymentconfig.h"
 #include "gamedirs.h"		// for Search_Files.
 #include "globals.h"
+#include "goptions.h"
 #include "ipxmgr.h"
 #include "language/language.h"
 #include "launcher.h"
@@ -80,9 +81,13 @@
 #include <algorithm>
 #include <chrono>
 #include <ctime> // for station ID computation
+#if defined(_WIN32)
 #include <dos.h> // for station ID computation
 #include <thread>
 #include <winsock.h> // for ntohl
+#else
+#include <arpa/inet.h>
+#endif
 
 
 /***************************** Globals *************************************/
@@ -166,7 +171,9 @@ SessionClass::SessionClass(void)
 	Options.Ghosts = 0;
 	Options.UnitCount = 0;
 	Options.ShortGame = 0;
-	Options.GameSpeed = 0;
+	// The skirmish screen shows 6 minus this value; starting from zero made it show the fastest
+	// setting, and accepting the screen wrote that back over the player's saved speed.
+	Options.GameSpeed = ::Options.GameSpeed;
 	Options.CrapEngineers = 0;
 
 	Options.AlliesAllowed=0;

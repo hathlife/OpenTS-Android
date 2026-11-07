@@ -112,7 +112,13 @@ char const * const OptionsClass::HotkeyName = "WinHotkeys";
  *=============================================================================================*/
 OptionsClass::OptionsClass(void) :
 	Difficulty(DIFF_NORMAL),
+#if defined(__ANDROID__)
+	// Fifteen frames a second is what the game was written for. A phone would otherwise open
+	// at the desktop default and run the simulation at twice that pace.
+	GameSpeed(5),
+#else
 	GameSpeed(3),
+#endif
 	ScrollRate(3),
 	SoundVolume(.7f),
 	VoiceVolume(1.0f),
