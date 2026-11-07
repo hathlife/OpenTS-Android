@@ -15,6 +15,7 @@
 #include "sdl/sdlevents.h"
 #include "sdl/sdlinput.h"
 #include "sdl/sdlkeys.h"
+#include "sdl/touchmap.h"
 #if defined(_WIN32)
 #include "win.h"
 #include <commctrl.h>
@@ -138,8 +139,9 @@ void Set_Hints(void)
 	// macOS has no system double-click distance. 2 is the Windows default.
 	Set_Hint(SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS, 2);
 #elif defined(__ANDROID__)
-	// Touch events arrive as mouse events so the existing pointer code drives the game.
-	Set_Hint(SDL_HINT_TOUCH_MOUSE_EVENTS, "1");
+	// The touch mapper below issues the mouse events each contact means. SDL's own
+	// translation would click the left button on every contact and defeat it.
+	Set_Hint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
 	Set_Hint(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME, 500);
 	Set_Hint(SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS, 2);
 #endif
@@ -191,6 +193,11 @@ static int Client_Points(int size)
 
 void Dispatch(WindowEvent const & event)
 {
+	if (event.Type == WINDOW_EVENT_FOCUS_LOST) {
+		// A release that never arrives would leave a contact tracked for ever.
+		Touch_Reset();
+	}
+
 	if (event.Type == WINDOW_EVENT_FOCUS_GAINED) {
 		_Input.Focus_Gained();
 	} else if (event.Type == WINDOW_EVENT_FOCUS_LOST) {
@@ -689,8 +696,29 @@ void Main_Window_Pump_Events(void)
 	}
 #endif
 
+#if defined(__ANDROID__)
+	Touch_Tick(SDL_GetTicks(), &Handle_SDL_Event);
+#endif
+
 	SDL_Event sdlevent;
 	while (SDL_PollEvent(&sdlevent)) {
+#if defined(__ANDROID__)
+		if (sdlevent.type == SDL_EVENT_FINGER_DOWN
+			|| sdlevent.type == SDL_EVENT_FINGER_MOTION
+			|| sdlevent.type == SDL_EVENT_FINGER_UP
+			|| sdlevent.type == SDL_EVENT_FINGER_CANCELED) {
+			int width = 0;
+			int height = 0;
+			if (SDL_GetWindowSizeInPixels(_Window, &width, &height)) {
+				// The finger event's own stamp is in nanoseconds; the mapper measures holds in
+				// milliseconds, so it is given the same clock the pump ticks with.
+				Touch_Handle_Event(sdlevent.type, sdlevent.tfinger.fingerID,
+					sdlevent.tfinger.x, sdlevent.tfinger.y,
+					SDL_GetTicks(), width, height, &Handle_SDL_Event);
+			}
+			continue;
+		}
+#endif
 		if (!Watched(sdlevent.type)) {
 			Handle_SDL_Event(sdlevent);
 		}
@@ -764,9 +792,31 @@ void Main_Window_Confine_Cursor(bool confine)
 }
 
 
+static bool Main_Window_Cursor_Position_System(int & x, int & y);
+
+
 // The position is read from the system rather than from the last event, so it is current
-// even while the game is not pumping events.
+// even while the game is not pumping events. A device with no pointer answers from the touch
+// layer instead.
 bool Main_Window_Cursor_Position(int & x, int & y)
+{
+#if defined(__ANDROID__)
+	// There is no system pointer to ask: the touch layer is the pointer.
+	int touchx = 0;
+	int touchy = 0;
+	if (Touch_Pointer_Position(touchx, touchy)) {
+		float const density = Pixel_Density();
+		x = (int)std::lround(touchx / density);
+		y = (int)std::lround(touchy / density);
+		return(true);
+	}
+#endif
+
+	return(Main_Window_Cursor_Position_System(x, y));
+}
+
+
+static bool Main_Window_Cursor_Position_System(int & x, int & y)
 {
 	if (_Window == nullptr) {
 		return(false);
@@ -799,6 +849,16 @@ void Main_Window_Warp_Cursor(int x, int y)
 // Mouse buttons follow the player's left-handed button setting.
 bool Main_Window_Key_Down(int virtualkey)
 {
+#if defined(__ANDROID__)
+	// The buttons the touch layer synthesizes are the only ones there are.
+	if (virtualkey == VK_LBUTTON) {
+		return(Touch_Button_Down(SDL_BUTTON_LEFT));
+	}
+	if (virtualkey == VK_RBUTTON) {
+		return(Touch_Button_Down(SDL_BUTTON_RIGHT));
+	}
+#endif
+
 	switch (virtualkey) {
 		case VK_LBUTTON:	return((SDL_GetGlobalMouseState(nullptr, nullptr) & SDL_BUTTON_LMASK) != 0);
 		case VK_RBUTTON:	return((SDL_GetGlobalMouseState(nullptr, nullptr) & SDL_BUTTON_RMASK) != 0);

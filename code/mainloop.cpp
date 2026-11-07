@@ -57,6 +57,7 @@
 #include "savemgr.h"
 #include "scenario.h"
 #include "scheme.h"
+#include "sdl/touchmap.h"
 #include "session.h"
 #include "statehash.h"
 #include "stats.h"
@@ -256,6 +257,30 @@ bool Main_Loop(void)
 	int y;
 
 	//Mono_Set_Cursor(0,0);
+
+#if defined(__ANDROID__)
+	// A two-finger pan moves the view directly. Feeding it to the game as mouse input would
+	// end in a right click, because that is what a right-drag release means.
+	{
+		TouchPan pan;
+		if (Touch_Take_Pan(pan)) {
+			if (pan.X < 0) {
+				int distance = -pan.X;
+				Map.Scroll_Map(FACING_W, distance, true);
+			} else if (pan.X > 0) {
+				int distance = pan.X;
+				Map.Scroll_Map(FACING_E, distance, true);
+			}
+			if (pan.Y < 0) {
+				int distance = -pan.Y;
+				Map.Scroll_Map(FACING_N, distance, true);
+			} else if (pan.Y > 0) {
+				int distance = pan.Y;
+				Map.Scroll_Map(FACING_S, distance, true);
+			}
+		}
+	}
+#endif
 
 	if (!GameActive) {return(!GameActive);}
 
