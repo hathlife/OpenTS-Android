@@ -41,11 +41,19 @@ elseif(MSVC)
         message(FATAL_ERROR
             "OpenTS targets Win32 and x64. Reconfigure with -A Win32 or -A x64.")
     endif()
+elseif(APPLE AND CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64"
+       AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+    message(STATUS "Configuring the unsupported Apple Silicon experiment.")
+elseif(ANDROID)
+    message(STATUS "Configuring the unsupported Android experiment for ${CMAKE_ANDROID_ARCH_ABI}.")
 else()
     message(FATAL_ERROR
         "OpenTS requires the Visual Studio 2022 MSVC toolchain. "
         "For the unsupported clang-cl experiment, configure with "
-        "-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/clang-cl-msvc.cmake.")
+        "-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/clang-cl-msvc.cmake. "
+        "For the unsupported Apple Silicon experiment, configure on an arm64 Mac "
+        "with Apple Clang. For the unsupported Android experiment, configure with "
+        "the NDK toolchain file and -DANDROID_ABI.")
 endif()
 
 string(TOLOWER "${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}" OPENTS_ARCH)

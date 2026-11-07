@@ -56,7 +56,13 @@ endif()
 #
 message(STATUS "${PROJECT_NAME}: Creating '${PROJECT_NAME}' executable...")
 
-add_executable(OpenTS WIN32 ${OPENTS_SRC})
+if(ANDROID)
+    # The Android build is loaded by the Java activity, so it is a shared library and not an
+    # executable. Its symbols are exported for that loader.
+    add_library(OpenTS SHARED ${OPENTS_SRC})
+else()
+    add_executable(OpenTS WIN32 ${OPENTS_SRC})
+endif()
 target_compile_features(OpenTS PRIVATE cxx_std_20)
 
 #
@@ -78,6 +84,17 @@ set_target_properties(OpenTS PROPERTIES
     PDB_NAME_DEBUG "GameD"
     PDB_NAME_RELEASE "Game"
 )
+
+# The Android loader looks the library up by its soname, which has to stay free of the
+# Debug and Release suffixes the Windows build uses.
+if(ANDROID)
+    set_target_properties(OpenTS PROPERTIES
+        OUTPUT_NAME "OpenTS"
+        OUTPUT_NAME_DEBUG "OpenTS"
+        OUTPUT_NAME_RELEASE "OpenTS"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/jniLibs/${CMAKE_ANDROID_ARCH_ABI}"
+    )
+endif()
 
 set_target_properties(OpenTS PROPERTIES
     VS_DEBUGGER_COMMAND "$<TARGET_FILE:OpenTS>"
@@ -132,8 +149,42 @@ set(OPENTS_COMPILE_OPTIONS
         >
     >
 )
+endif()
+
+if(NOT WIN32)
+    # The engine uses __declspec(property) for its field-style accessors.
+    list(APPEND OPENTS_COMPILE_OPTIONS -fdeclspec)
+
+    # Language.dll is a Windows resource library. A non-Windows build reads the same string
+    # table from a generated translation unit instead.
+    find_package(Python3 COMPONENTS Interpreter REQUIRED)
+    set(OPENTS_LANGUAGE_STRINGS "${CMAKE_CURRENT_BINARY_DIR}/language_strings.cpp")
+    add_custom_command(
+        OUTPUT "${OPENTS_LANGUAGE_STRINGS}"
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/language/extract_strings.py"
+            "${CMAKE_CURRENT_SOURCE_DIR}/language/language.h"
+            "${CMAKE_CURRENT_SOURCE_DIR}/language/language.rc"
+            "${OPENTS_LANGUAGE_STRINGS}"
+        DEPENDS
+            "${CMAKE_CURRENT_SOURCE_DIR}/language/extract_strings.py"
+            "${CMAKE_CURRENT_SOURCE_DIR}/language/language.h"
+            "${CMAKE_CURRENT_SOURCE_DIR}/language/language.rc"
+        VERBATIM
+    )
+    target_sources(OpenTS PRIVATE "${OPENTS_LANGUAGE_STRINGS}")
+endif()
 
 target_compile_options(OpenTS PRIVATE ${OPENTS_COMPILE_OPTIONS})
+
+if(ANDROID)
+    # The Android toolchain turns a non-literal format string into an error. The engine was
+    # written against MSVC, which accepts one, so this build reports it without failing.
+    target_compile_options(OpenTS PRIVATE -Wno-error=format-security)
+
+    # AArch64 Android makes char unsigned. The engine was written for a signed char, and the
+    # masks and negative sentinels in it depend on that, so the Windows meaning is restored.
+    target_compile_options(OpenTS PRIVATE -fsigned-char)
+endif()
 
 #
 # ---------------------------------------------------------
@@ -223,6 +274,13 @@ endif()
 #
 message(STATUS "${PROJECT_NAME}: Applying linker options...")
 
+# SDL is shared on Android because its activity loads libSDL3.so by name first.
+if(ANDROID)
+    set(OPENTS_SDL_TARGET SDL3::SDL3)
+else()
+    set(OPENTS_SDL_TARGET SDL3::SDL3-static)
+endif()
+
 # Required libraries:
 #  Comctl32.lib
 #  DbgHelp.lib
@@ -243,17 +301,36 @@ target_link_libraries(OpenTS PRIVATE
     lzo
     RmlUi::Core
     imgui
-    SDL3::SDL3-static
-    comctl32
-    dbghelp
-    iphlpapi
-    psapi
-    version
-    winmm
-    ws2_32
-    kernel32 user32 gdi32 winspool comdlg32 advapi32 shell32
-    odbc32 odbccp32
+    ${OPENTS_SDL_TARGET}
 )
+if(WIN32)
+    target_link_libraries(OpenTS PRIVATE
+        comctl32
+        dbghelp
+        iphlpapi
+        psapi
+        version
+        winmm
+        ws2_32
+        kernel32 user32 gdi32 winspool comdlg32 advapi32 shell32
+        odbc32 odbccp32
+    )
+endif()
+
+if(ANDROID)
+    # bgfx reaches the screen through EGL and GLES, and the platform layer logs through the
+    # NDK. The NDK supplies these as system libraries rather than imported targets.
+    target_link_libraries(OpenTS PRIVATE EGL GLESv2 android log)
+
+    # SDL's activity loads libSDL3.so before it loads the game library, so it is packaged
+    # beside it rather than linked into it.
+    add_custom_command(TARGET OpenTS POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:SDL3::SDL3>" "$<TARGET_FILE_DIR:OpenTS>"
+        COMMENT "Copying the SDL library beside the game library"
+        VERBATIM
+    )
+endif()
 
 if(MSVC)
     target_link_options(OpenTS PRIVATE
@@ -324,9 +401,15 @@ source_group("Header Files" REGULAR_EXPRESSION ".*\\.(h|hpp)$")
 # ---------------------------------------------------------
 #
 # The game reads the ui directory from beside the executable. A separate target copies it
-# there, so an edited document reaches the output without a relink.
+# there, so an edited document reaches the output without a relink. The Android package takes
+# the same documents as assets, which Gradle reads from the assets directory below.
+if(ANDROID)
+    set(OPENTS_UI_DIRECTORY "${CMAKE_BINARY_DIR}/assets/ui")
+else()
+    set(OPENTS_UI_DIRECTORY "$<TARGET_FILE_DIR:OpenTS>/ui")
+endif()
 add_custom_target(OpenTSUIFiles ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/ui" "$<TARGET_FILE_DIR:OpenTS>/ui"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/ui" "${OPENTS_UI_DIRECTORY}"
     COMMENT "Copying the UI files beside the executable"
     VERBATIM
 )

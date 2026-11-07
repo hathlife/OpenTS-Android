@@ -180,6 +180,37 @@ The toolchain requires `clang-cl`, `lld-link`, `llvm-lib`, `llvm-mt`, and
 `llvm-rc` on `PATH`. It exports `compile_commands.json`; one configuration in
 `.vscode/c_cpp_properties.clang.example.json` reads that file for IntelliSense.
 
+## Experimental Android build
+
+An unsupported Android build is available for portability work. It produces an arm64 APK that
+runs the engine on a device. It does not expand the supported build matrix or establish runtime
+behavior.
+
+The shell in `android/` packages the engine and names the libraries SDL loads. The engine and
+SDL are built as shared libraries by the same CMake configure used elsewhere; Gradle only
+packages what that configure writes, so a change to the engine needs both commands below.
+
+Install the Android SDK with NDK r28, CMake 3.23 or newer, Ninja, and a JDK 17 or newer. Set
+`ANDROID_HOME` to the SDK and `JAVA_HOME` to the JDK. From the repository root:
+
+```bash
+cmake -S . -B build/android -G Ninja \
+  -DCMAKE_TOOLCHAIN_FILE="$ANDROID_HOME/ndk/28.2.13676358/build/cmake/android.toolchain.cmake" \
+  -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-26 -DCMAKE_BUILD_TYPE=Release
+cmake --build build/android
+gradle -p android assembleDebug
+```
+
+The APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`.
+
+The game data stays off the APK. Put a Tiberian Sun installation in
+`/data/data/net.opents.android/files/data` on the device; the shell unpacks its own `ui/`
+documents from the APK assets on first launch and writes settings and saves beside them.
+
+The interface is laid out for 640 by 400 and the frame keeps that size on Android, so the
+presenter scales the whole picture to the display. Touching the screen acts as the left mouse
+button; the other controls the game expects are not mapped yet.
+
 ## Build from Visual Studio Code
 
 With the recommended extensions installed, the repository provides:

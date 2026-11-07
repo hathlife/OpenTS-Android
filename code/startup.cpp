@@ -164,10 +164,45 @@
 #include <cfloat>
 #include <chrono>
 #include <lzo/lzoconf.h>
+#if defined(_WIN32)
 #include <shellapi.h>
+#else
+#include <unistd.h>
+
+#include <climits>
+#include <cstdio>
+#include <cstring>
+
+#if defined(__APPLE__)
+#include <mach-o/dyld.h>
+#endif
+#endif
 #include <string>
 #include <thread>
 #include <vector>
+
+#if defined(__ANDROID__)
+#include <filesystem>
+
+// The process name is the package name, which is what names both directories below.
+static std::string Android_Package_Name(void)
+{
+	char line[256] = {};
+	if (FILE * names = std::fopen("/proc/self/cmdline", "rb")) {
+		std::fread(line, 1, sizeof(line) - 1, names);
+		std::fclose(names);
+	}
+	return(line[0] != '\0' ? std::string(line) : std::string("net.opents.android"));
+}
+
+
+// A library loaded by an activity has no directory of its own, so the game's writable files
+// live in the package's files directory.
+static std::string Android_Files_Directory(void)
+{
+	return(std::string("/data/data/") + Android_Package_Name() + "/files");
+}
+#endif
 
 extern	HINSTANCE LanguageResources;
 
@@ -592,10 +627,49 @@ int main(int argc, char ** supplied_argv)
 	_splitpath(argv[0], drive, dir, NULL, NULL);
 	_makepath(path, drive, dir, NULL, NULL);
 	SetCurrentDirectory(path);
+#else
+	if (!Executable_Directory(path_to_exe, (int)sizeof(path_to_exe), path, (int)sizeof(path))) {
+		return(EXIT_FAILURE);
+	}
+	argc = Build_Posix_Arguments(path_to_exe, argc, supplied_argv, argv);
+#endif
 
 	int error_code = EXIT_FAILURE;
 
 	bool const parsed = Parse_Command_Line(argc, argv);
+
+#if defined(__ANDROID__)
+	// The game reads and writes beside itself on the desktop. Android gives it one writable
+	// directory, so settings, saves, and the imported game data all live there.
+	std::string const home = Android_Files_Directory();
+	std::error_code directory_error;
+	std::filesystem::create_directories(home + "/data", directory_error);
+
+	// The launcher supplies no arguments, so these defaults never displace a choice made on a
+	// command line.
+	Set_User_Directory((home + "/saves").c_str());
+
+	// The game data is a few hundred megabytes, which is easier to place on shared storage
+	// with adb than in the private directory. A data directory there wins when it exists.
+	// The path is asked for in both forms Android has used for it; the short one is a link
+	// that a process may not be able to follow.
+	std::string const package = Android_Package_Name();
+	std::string const candidates[] = {
+		"/storage/emulated/0/Android/data/" + package + "/files/data",
+		"/sdcard/Android/data/" + package + "/files/data",
+		"/storage/self/primary/Android/data/" + package + "/files/data",
+	};
+
+	std::string data = home + "/data";
+	for (std::string const & candidate : candidates) {
+		std::error_code candidate_error;
+		if (std::filesystem::is_directory(candidate, candidate_error)) {
+			data = candidate;
+			break;
+		}
+	}
+	Set_Data_Directory((data + "/").c_str());
+#endif
 
 #ifdef _DEBUG
 	// Debug builds show the console without -XC, except to a headless run, which shows nothing.
@@ -621,10 +695,20 @@ int main(int argc, char ** supplied_argv)
 		Init_Search_Folders(DeploymentConfig.SearchPaths.c_str());
 
 		std::string uidirectory = path;
+#if defined(__ANDROID__)
+		// The documents are unpacked from the APK into the files directory at first launch.
+		uidirectory = Android_Files_Directory() + "/ui/";
+#elif defined(_WIN32)
 		if (!uidirectory.empty() && uidirectory.back() != '\\' && uidirectory.back() != '/') {
 			uidirectory += '\\';
 		}
 		uidirectory += "ui\\";
+#else
+		if (!uidirectory.empty() && uidirectory.back() != '/') {
+			uidirectory += '/';
+		}
+		uidirectory += "ui/";
+#endif
 		CDFileClass::Add_Search_Drive(uidirectory.c_str());
 
 		CDFileClass *cfile = new CDFileClass(DeploymentConfig.SettingsFile.c_str());

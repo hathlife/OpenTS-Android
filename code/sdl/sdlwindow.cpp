@@ -121,14 +121,28 @@ void Set_Hints(void)
 	Set_Hint(SDL_HINT_WINDOWS_ERASE_BACKGROUND_MODE, "0");
 	Set_Hint(SDL_HINT_WINDOWS_INTRESOURCE_ICON, IDI_SUN);
 	Set_Hint(SDL_HINT_WINDOWS_INTRESOURCE_ICON_SMALL, IDI_SUN);
+#endif
 	Set_Hint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 	Set_Hint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
 	Set_Hint(SDL_HINT_WINDOW_ALLOW_TOPMOST, "0");
 	Set_Hint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 	Set_Hint(SDL_HINT_MOUSE_AUTO_CAPTURE, "1");
 	Set_Hint(SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE, "0");
+#if defined(_WIN32)
 	Set_Hint(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME, (int)GetDoubleClickTime());
 	Set_Hint(SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS, GetSystemMetrics(SM_CXDOUBLECLK) / 2);
+#elif defined(__APPLE__)
+	// macOS 14 leaves a terminal launch in the background unless this is set before SDL starts.
+	Set_Hint(SDL_HINT_MAC_BACKGROUND_APP, "0");
+	Set_Hint(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME, System_Double_Click_Ms());
+	// macOS has no system double-click distance. 2 is the Windows default.
+	Set_Hint(SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS, 2);
+#elif defined(__ANDROID__)
+	// Touch events arrive as mouse events so the existing pointer code drives the game.
+	Set_Hint(SDL_HINT_TOUCH_MOUSE_EVENTS, "1");
+	Set_Hint(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME, 500);
+	Set_Hint(SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS, 2);
+#endif
 	Set_Hint(SDL_HINT_KEYCODE_OPTIONS, "french_numbers,latin_letters");
 }
 
@@ -473,16 +487,24 @@ bool Main_Window_Create(bool windowed, int width, int height, MainWindowIcon con
 
 	SDL_AddEventWatch(Watch_Window, nullptr);
 	SDL_AddEventWatch(Watch_Keys, nullptr);
+#if defined(_WIN32)
 	SetWindowSubclass(Window_Handle(), Watch_Messages, WindowSubclass, 0);
+#endif
 	_Input.Reset();
 
 	if (!_Unattended) {
 		SDL_ShowWindow(_Window);
 		SDL_RaiseWindow(_Window);
+#if defined(__APPLE__)
+		Order_Window_Front();
+#endif
 	}
 
-	// Typed text is always on, as characters from Windows were.
+	// Typed text is always on, as characters from Windows were. Android would answer that by
+	// raising the soft keyboard over the game, so there it waits for the game to ask.
+#if !defined(__ANDROID__)
 	SDL_StartTextInput(_Window);
+#endif
 
 	return(true);
 }
