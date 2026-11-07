@@ -425,7 +425,9 @@ void ParticleSystemClass::Smoke_AI(void)
 {
 	int i;
 
-	if (Source->As_ObjectClass() != NULL && Source->What_Am_I() != RTTI_BUILDING) {
+	// Detach clears the source when the object it followed is destroyed, and the system lives
+	// until the next pass removes it, so the source may already be gone here.
+	if (Source != NULL && Source->As_ObjectClass() != NULL && Source->What_Am_I() != RTTI_BUILDING) {
 		Set_Coord(Source->Center_Coord() + CoordOffset);
 	}
 
