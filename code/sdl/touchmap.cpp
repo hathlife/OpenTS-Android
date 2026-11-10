@@ -421,9 +421,15 @@ void On_Finger_Up(SDL_FingerID id, float x, float y, Uint64 timestamp, bool canc
 			// released inside the same sample, and the game would not see a click at all. The
 			// release waits out the shortest hold the loop can observe.
 			if (MapperState.PressPending) {
-				// The contact lifted before the press was due: press now, and the release that
-				// follows makes it the click it was meant to be.
+				// The contact lifted before the press was due: press on the next pass and release
+				// after the hold, so the game sees the click. Without the scheduled release the
+				// button stayed down and the click only completed on the next tap.
 				MapperState.PressAt = timestamp;
+				MapperState.ReleaseX = x;
+				MapperState.ReleaseY = y;
+				MapperState.ReleaseButton = SDL_BUTTON_LEFT;
+				MapperState.ReleasePending = true;
+				MapperState.ReleaseAt = timestamp + CLICK_HOLD_MS;
 			} else {
 				Uint64 const heldsince = timestamp >= MapperState.LeftPressedAt
 					? timestamp - MapperState.LeftPressedAt
