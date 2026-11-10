@@ -15,6 +15,8 @@
 
 #include "video.h"
 
+#include "movies.h"
+
 #include "_surface.h"
 #include "_ui.h"
 #include "_xmouse.h"
@@ -105,6 +107,22 @@ static void Update_Present_Interval(int refreshrate)
 /// The frame keeps its shape, so it is grown by whichever of the two axes runs out first
 /// and centered in what is left over.
 /// </summary>
+/// <summary>
+/// The view mode the current content is drawn with.
+/// The intro and the menus are part of the frame, so they fill the window whatever mode the
+/// tactical view is set to; only a running scenario follows the player's choice.
+/// </summary>
+static int Effective_View_Mode(void)
+{
+#if defined(__ANDROID__)
+	if (Movie_Is_Playing() || !ScenarioActive) {
+		return(VIDEO_VIEW_FIT);
+	}
+#endif
+	return(Options.ViewScale);
+}
+
+
 static void Update_Scale_Info(void)
 {
 	_ScaleInfo.GameWidth = VideoModeWidth;
@@ -124,9 +142,10 @@ static void Update_Scale_Info(void)
 	double scaley = (double)_ScaleInfo.DrawableHeight / (double)_ScaleInfo.GameHeight;
 	double scale = (scalex < scaley) ? scalex : scaley;
 
-	if (Options.ViewScale == VIDEO_VIEW_NATIVE) {
+	int const viewmode = Effective_View_Mode();
+	if (viewmode == VIDEO_VIEW_NATIVE) {
 		scale = 1.0;
-	} else if (Options.ViewScale == VIDEO_VIEW_INTEGER && scale >= 1.0) {
+	} else if (viewmode == VIDEO_VIEW_INTEGER && scale >= 1.0) {
 		scale = (double)(int)scale;
 	}
 
@@ -348,6 +367,13 @@ static void Present(void)
 {
 	if (!_Initialized || _Presenting || VisibleSurface == NULL) {
 		return;
+	}
+
+	static int lastviewmode = -1;
+	if (Effective_View_Mode() != lastviewmode) {
+		lastviewmode = Effective_View_Mode();
+		Update_Scale_Info();
+		Refresh_Mouse_Pointer();
 	}
 	if (Main_Window_Minimized()) {
 		return;
