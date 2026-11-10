@@ -182,7 +182,9 @@
 #include <vector>
 
 #if defined(__ANDROID__)
+#include <android/log.h>
 #include <filesystem>
+
 
 // The process name is the package name, which is what names both directories below.
 static std::string Android_Package_Name(void)
@@ -653,19 +655,32 @@ int main(int argc, char ** supplied_argv)
 	// with adb than in the private directory. A data directory there wins when it exists.
 	// The path is asked for in both forms Android has used for it; the short one is a link
 	// that a process may not be able to follow.
+	// The private directory is the fast one: the engine looks for its mix files by pattern,
+	// once per index, and every one of those searches reads the whole directory. On shared
+	// storage that path goes through the media provider, which turns those searches into
+	// tens of seconds; the same reads on the private volume take milliseconds. Shared storage
+	// is only used when the private directory has no game data.
 	std::string const package = Android_Package_Name();
-	std::string const candidates[] = {
-		"/storage/emulated/0/Android/data/" + package + "/files/data",
-		"/sdcard/Android/data/" + package + "/files/data",
-		"/storage/self/primary/Android/data/" + package + "/files/data",
-	};
-
 	std::string data = home + "/data";
-	for (std::string const & candidate : candidates) {
-		std::error_code candidate_error;
-		if (std::filesystem::is_directory(candidate, candidate_error)) {
-			data = candidate;
-			break;
+
+	std::error_code private_error;
+	bool const private_has_data = std::filesystem::is_directory(data, private_error)
+		&& !std::filesystem::is_empty(data, private_error);
+
+	if (!private_has_data) {
+		std::string const candidates[] = {
+			"/storage/emulated/0/Android/data/" + package + "/files/data",
+			"/sdcard/Android/data/" + package + "/files/data",
+			"/storage/self/primary/Android/data/" + package + "/files/data",
+		};
+
+		for (std::string const & candidate : candidates) {
+			std::error_code candidate_error;
+			if (std::filesystem::is_directory(candidate, candidate_error)
+				&& !std::filesystem::is_empty(candidate, candidate_error)) {
+				data = candidate;
+				break;
+			}
 		}
 	}
 	Set_Data_Directory((data + "/").c_str());
