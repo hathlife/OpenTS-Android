@@ -53,11 +53,13 @@
     <!-- Allow access to the vibrator -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
-    <!-- Allow access to Internet -->
-    <!-- if you want to connect to the network or internet, uncomment this. -->
-    <!--
+    <!-- The engine opens its LAN sockets itself, so the permission has to be declared here.
+         Without it every socket call fails and the network menus fall back to the main menu
+         without saying why. -->
     <uses-permission android:name="android.permission.INTERNET" />
-    -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- LAN discovery broadcasts to the whole subnet. -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 
     <!-- Create a Java class extending SDLActivity and place it in a
          directory under app/src/main/java matching the package, e.g. app/src/main/java/com/gamemaker/game/MyGame.java
