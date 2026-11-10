@@ -53,12 +53,20 @@ class UIEngineHostClass : public UIShellHostClass
 		{
 			VideoScaleInfo const & scale = Video_Get_Scale_Info();
 			UIFrameRect frame;
-			frame.X = scale.DestX;
-			frame.Y = scale.DestY;
-			frame.Width = scale.DestWidth;
-			frame.Height = scale.DestHeight;
-			frame.ScaleX = scale.ScaleX;
-			frame.ScaleY = scale.ScaleY;
+
+			// The documents are laid out for a 640 wide frame, and that density is what keeps
+			// the interface the same size when the game frame is drawn one pixel per pixel.
+			constexpr float AuthoringWidth = 640.0f;
+			float const ratio = (scale.DrawableWidth > 0)
+				? (float)scale.DrawableWidth / AuthoringWidth
+				: 1.0f;
+
+			frame.X = 0;
+			frame.Y = 0;
+			frame.Width = scale.DrawableWidth;
+			frame.Height = scale.DrawableHeight;
+			frame.ScaleX = ratio;
+			frame.ScaleY = ratio;
 			return(frame);
 		}
 
