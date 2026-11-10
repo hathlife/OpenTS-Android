@@ -13,6 +13,10 @@
 
 #include "always.h"
 
+#if defined(__ANDROID__)
+#include <android/log.h>
+#endif
+
 #include "dbgprint.h"
 
 #include "opents_build.h"
@@ -656,6 +660,12 @@ void DebugPrint::Write_Text_Locked(char const * text, size_t length)
 	if (text == NULL || length == 0) {
 		return;
 	}
+
+#if defined(__ANDROID__)
+	// Android has no debugger channel, so logcat stands in for it: without this the engine's
+	// own log only reaches a file the game may not be able to open.
+	__android_log_print(ANDROID_LOG_INFO, "OpenTS", "%.*s", (int)length, text);
+#endif
 
 	bool should_flush = false;
 	if (text[length - 1] == '\n') {
