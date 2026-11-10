@@ -46,6 +46,12 @@ class UIDisplayEngineServiceClass : public UIDisplayServiceClass
 			Options.SystemCursor = on;
 			Refresh_Window_Arrow();
 		}
+
+		virtual void Set_View_Scale(int mode) override
+		{
+			Options.ViewScale = mode;
+			Video_Refresh_View();
+		}
 };
 
 UIDisplayEngineServiceClass _Service;
@@ -64,6 +70,19 @@ void UI_Display_State(UIDisplayState & state)
 	state = UIDisplayState();
 	state.StretchMovies = Options.StretchMovies;
 	state.SystemCursor = Options.SystemCursor;
+
+	// The scale choices come first and own the selection until a resolution is listed and
+	// picked; a chosen scale leaves the frame size alone.
+	char const * const scale_names[] = { "Fit the screen", "Whole pixels", "Actual size" };
+	for (int mode = 0; mode < 3; mode++) {
+		UIDisplayMode entry;
+		entry.Label = scale_names[mode];
+		entry.ViewScale = mode;
+		if (mode == Options.ViewScale) {
+			state.Selected = (int)state.Modes.size();
+		}
+		state.Modes.push_back(entry);
+	}
 
 	int * modes = EnumDisplayModes(MIN_WIDTH, MIN_HEIGHT, MAX_WIDTH, MAX_HEIGHT);
 	if (modes == NULL) {

@@ -33,11 +33,18 @@ void UIDisplayPresenterClass::Execute(UIIntent const & intent)
 	} else if (intent.Name == "systemcursor") {
 		State.SystemCursor = (intent.Value != 0);
 
+
 	} else if (intent.Name == "ok") {
 		Service.Set_Stretch_Movies(State.StretchMovies);
 		Service.Set_System_Cursor(State.SystemCursor);
+
 		if (State.Selected >= 0 && State.Selected != Initial) {
-			Picked = State.Modes[State.Selected];
+			UIDisplayMode const & chosen = State.Modes[State.Selected];
+			if (chosen.ViewScale >= 0) {
+				Service.Set_View_Scale(chosen.ViewScale);
+			} else {
+				Picked = chosen;
+			}
 		}
 		Result = UI_RESULT_ACCEPTED;
 

@@ -24,6 +24,10 @@ struct UIDisplayMode
 	int Width = 0;
 	int Height = 0;
 	std::string Label;
+
+	// A view mode entry carries VideoViewMode here and no resolution; selecting it does not
+	// change the frame size.
+	int ViewScale = -1;
 };
 
 
@@ -33,6 +37,7 @@ class UIDisplayServiceClass
 		virtual ~UIDisplayServiceClass(void) = default;
 		virtual void Set_Stretch_Movies(bool on) = 0;
 		virtual void Set_System_Cursor(bool on) = 0;
+		virtual void Set_View_Scale(int mode) = 0;
 };
 
 

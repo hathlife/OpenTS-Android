@@ -9,6 +9,8 @@
 
 #include "ui/uishell.h"
 
+#include "dbgprint.h"
+
 #include "ui/dev/uidev.h"
 #include "ui/rml/rmlkeys.h"
 #include "ui/rml/rmlrender.h"
@@ -221,6 +223,9 @@ void UIShellClass::Apply_Dimensions(void)
 
 	Context->SetDimensions(Rml::Vector2i(frame.Width, frame.Height));
 	Context->SetDensityIndependentPixelRatio(ratio);
+
+	// A new density or size only reaches the screen on the next redraw.
+	Host.Mark_Overlay_Dirty();
 
 	Fonts->Set_Scale(ratio);
 
