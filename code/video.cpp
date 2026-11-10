@@ -124,7 +124,9 @@ static void Update_Scale_Info(void)
 	double scaley = (double)_ScaleInfo.DrawableHeight / (double)_ScaleInfo.GameHeight;
 	double scale = (scalex < scaley) ? scalex : scaley;
 
-	if (Options.IntegerScaling && scale >= 1.0) {
+	if (Options.ViewScale == VIDEO_VIEW_NATIVE) {
+		scale = 1.0;
+	} else if (Options.ViewScale == VIDEO_VIEW_INTEGER && scale >= 1.0) {
 		scale = (double)(int)scale;
 	}
 
@@ -233,6 +235,24 @@ void Video_Frame_Size(int width, int height, int & framewidth, int & frameheight
 #endif
 	framewidth = width;
 	frameheight = height;
+}
+
+
+/// <summary>
+/// Puts the frame on screen again under the current settings.
+/// The settings file is read after the presenter is running, so the view it describes has to
+/// be recomputed once they arrive.
+/// </summary>
+void Video_Refresh_View(void)
+{
+	if (!_Initialized) {
+		return;
+	}
+
+	Update_Scale_Info();
+	Refresh_Mouse_Pointer();
+	UIShell.On_Video_Change();
+	_Dirty.Invalidate_Frame();
 }
 
 

@@ -145,7 +145,7 @@ OptionsClass::OptionsClass(void) :
 	WindowWidth(-1),
 	WindowHeight(-1),
 	ScaleMode(VIDEO_SCALE_PIXELART),
-	IntegerScaling(false),
+	ViewScale(VIDEO_VIEW_FIT),
 	VSync(false),
 	Renderer(0),
 	CursorScale(0),
@@ -349,6 +349,43 @@ static char const * Scale_Mode_Name(int mode)
 }
 
 
+static char const * View_Scale_Name(int mode)
+{
+	switch (mode) {
+		case VIDEO_VIEW_INTEGER:
+			return("Integer");
+
+		case VIDEO_VIEW_NATIVE:
+			return("Native");
+
+		default:
+			return("Fit");
+	}
+}
+
+
+static int View_Scale_From_Name(char const * name, int fallback)
+{
+	if (name == nullptr) {
+		return(fallback);
+	}
+
+	if (stricmp(name, "Integer") == 0) {
+		return(VIDEO_VIEW_INTEGER);
+	}
+
+	if (stricmp(name, "Native") == 0) {
+		return(VIDEO_VIEW_NATIVE);
+	}
+
+	if (stricmp(name, "Fit") == 0) {
+		return(VIDEO_VIEW_FIT);
+	}
+
+	return(fallback);
+}
+
+
 /***********************************************************************************************
  * OptionsClass::Load_Settings -- reads options settings from the INI file                     *
  *                                                                                             *
@@ -433,12 +470,18 @@ void OptionsClass::Load_Settings(void)
 	StretchMovies = ConfigINI.Get_Bool("Video", "StretchMovies", StretchMovies);
 	DebugString("StretchMovies is %s\n", StretchMovies == true ? "ON" : "OFF");
 
-	IntegerScaling = ConfigINI.Get_Bool("Video", "IntegerScaling", IntegerScaling);
+	// The boolean key predates the third mode, so it stands for Integer when the newer key
+	// is absent.
+	bool const integersonly = ConfigINI.Get_Bool("Video", "IntegerScaling", false);
+	char viewname[16];
+	ConfigINI.Get_String("Video", "ViewScale",
+		View_Scale_Name(integersonly ? VIDEO_VIEW_INTEGER : ViewScale), viewname, sizeof(viewname));
+	ViewScale = View_Scale_From_Name(viewname, integersonly ? VIDEO_VIEW_INTEGER : ViewScale);
 
 	char scalename[32];
 	ConfigINI.Get_String("Video", "ScaleMode", (char *)Scale_Mode_Name(ScaleMode), scalename, sizeof(scalename));
 	ScaleMode = Scale_Mode_From_Name(scalename, ScaleMode);
-	DebugString("ScaleMode is %d, IntegerScaling is %s\n", ScaleMode, IntegerScaling == true ? "ON" : "OFF");
+	DebugString("ScaleMode is %d, ViewScale is %d\n", ScaleMode, ViewScale);
 
 	CursorScale = ConfigINI.Get_Int("Video", "CursorScale", CursorScale);
 	SystemCursor = ConfigINI.Get_Bool("Video", "SystemCursor", SystemCursor);
@@ -508,7 +551,8 @@ void OptionsClass::Save_Settings (void)
 	ConfigINI.Put_Int("Video", "WindowWidth", WindowWidth);
 	ConfigINI.Put_Int("Video", "WindowHeight", WindowHeight);
 	ConfigINI.Put_String("Video", "ScaleMode", (char *)Scale_Mode_Name(ScaleMode));
-	ConfigINI.Put_Bool("Video", "IntegerScaling", IntegerScaling);
+	ConfigINI.Put_String("Video", "ViewScale", (char *)View_Scale_Name(ViewScale));
+	ConfigINI.Put_Bool("Video", "IntegerScaling", ViewScale == VIDEO_VIEW_INTEGER);
 	ConfigINI.Put_Bool("Video", "VSync", VSync);
 	ConfigINI.Put_Int("Video", "Renderer", Renderer);
 	ConfigINI.Put_Int("Video", "CursorScale", CursorScale);

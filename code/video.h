@@ -14,6 +14,14 @@
 #include <cstdint>
 
 
+// How the frame is sized up into the window. Only Fit changes the picture's size.
+enum VideoViewMode {
+	VIDEO_VIEW_FIT,
+	VIDEO_VIEW_INTEGER,
+	VIDEO_VIEW_NATIVE,
+};
+
+
 // How the presented frame is filtered when the window is larger than it.
 enum VideoScaleMode {
 	VIDEO_SCALE_NEAREST,
@@ -47,6 +55,8 @@ bool Video_Set_Mode(int width, int height);
 
 // The size the picture is drawn at for a chosen window size.
 void Video_Frame_Size(int width, int height, int & framewidth, int & frameheight);
+
+void Video_Refresh_View(void);
 void Video_On_Resize(int drawablewidth, int drawableheight);
 void Video_Set_Refresh_Rate(int refreshrate);
 

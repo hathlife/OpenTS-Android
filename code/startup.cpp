@@ -774,17 +774,15 @@ int main(int argc, char ** supplied_argv)
 		}
 
 		if (Options.ScreenWidth == -1 || Options.ScreenHeight == -1) {
+#if defined(__ANDROID__)
+			// A fresh install starts at the size the interface documents are laid out for.
+			Options.ScreenWidth = 640;
+			Options.ScreenHeight = 400;
+#else
 			Options.ScreenWidth = 640;
 			Options.ScreenHeight = 480;
-		}
-
-#if defined(__ANDROID__)
-		// The user interface documents are laid out at 640 by 400 and do not grow with the
-		// frame, so the frame keeps that size and the presenter scales it to the panel. A
-		// larger frame would show the same interface in a small part of the screen.
-		Options.ScreenWidth = 640;
-		Options.ScreenHeight = 400;
 #endif
+		}
 
 		int framewidth = Options.ScreenWidth;
 		int frameheight = Options.ScreenHeight;

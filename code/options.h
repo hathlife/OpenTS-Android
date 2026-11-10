@@ -182,10 +182,11 @@ class OptionsClass {
 		int ScaleMode;
 
 		/*
-		 * If the frame may only be enlarged by whole multiples, then this flag will be
-		 * true. It keeps every game pixel the same size at the cost of a wider border.
+		 * How the frame is fitted into the window, as one of the VideoViewMode values. Fit
+		 * scales it to the window, Integer keeps every game pixel the same size, and Native
+		 * draws it one pixel per pixel.
 		 */
-		bool IntegerScaling;
+		int ViewScale;
 
 		/*
 		 * If presents are to wait for the display's refresh, then this flag will be true.

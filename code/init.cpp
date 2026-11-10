@@ -55,6 +55,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "always.h"
+#include "video.h"
 
 #include "init.h"
 
@@ -412,6 +413,7 @@ int Init_Game(int , char * [])
 	*/
 	DebugString("Reading Game Settings\n");
 	Options.Load_Settings();
+	Video_Refresh_View();
 	SaveManager.Autosave.Set_Interval(Options.AutoSaveInterval);
 
 	/*

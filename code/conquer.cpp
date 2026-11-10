@@ -63,6 +63,9 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "always.h"
+#include "misc.h"
+
+#include "mainopt.h"
 
 #include "conquer.h"
 
@@ -358,6 +361,13 @@ void Main_Game(int argc, char * argv[])
 			Main_Window_Error_Box(Fetch_String(TXT_SHORT_TITLE), Fetch_String(TXT_INITGAME_FAILED));
 		}
 		return;
+	}
+
+	// The frame was opened at the startup default, so the resolution the settings file names
+	// is swapped in before any game is chosen.
+	if (Options.ScreenWidth > 0 && Options.ScreenHeight > 0
+		&& (Options.ScreenWidth != VideoModeWidth || Options.ScreenHeight != VideoModeHeight)) {
+		Change_Display_Mode(Options.ScreenWidth, Options.ScreenHeight);
 	}
 
 	/*
