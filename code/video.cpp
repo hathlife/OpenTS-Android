@@ -107,27 +107,75 @@ static void Update_Present_Interval(int refreshrate)
 /// The frame keeps its shape, so it is grown by whichever of the two axes runs out first
 /// and centered in what is left over.
 /// </summary>
-// The zoom steps in percent; the largest keeps the frame at the smallest size the battle
-// interface still lays out in, and goes up once the sidebar scales with the frame.
-constexpr int VIDEO_ZOOM_STEP = 25;
-constexpr int VIDEO_MIN_FRAME_WIDTH = 480;
-constexpr int VIDEO_MIN_FRAME_HEIGHT = 300;
-constexpr int VIDEO_MAX_ZOOM = 200;
+// The zoom steps, and the smallest frame the battle interface is authored for. A larger
+// zoom divides the panel further, so the frame shrinks until it reaches that size.
+constexpr int VIDEO_ZOOM_STEP = 100;
+constexpr int VIDEO_MIN_FRAME_WIDTH = 640;
+constexpr int VIDEO_MIN_FRAME_HEIGHT = 400;
+constexpr int VIDEO_MAX_ZOOM = 500;
+
+
+static void Video_Panel_Size(int & width, int & height)
+{
+	width = _ScaleInfo.DrawableWidth;
+	height = _ScaleInfo.DrawableHeight;
+
+	if (width <= 0 || height <= 0) {
+		Main_Window_Screen_Size(width, height);
+	}
+}
 
 
 /// <summary>
-/// The battle zoom in effect, in percent of the base frame.
+/// The largest zoom the panel allows before the frame reaches its smallest size.
 /// </summary>
-/// <returns>int; At least 100 and no more than the largest the smallest frame allows.</returns>
+static int Video_Largest_Zoom(void)
+{
+	int panelwidth = 0;
+	int panelheight = 0;
+	Video_Panel_Size(panelwidth, panelheight);
+
+	if (panelwidth <= 0 || panelheight <= 0) {
+		return(VIDEO_MAX_ZOOM);
+	}
+
+	int largest = panelwidth * 100 / VIDEO_MIN_FRAME_WIDTH;
+	int const byheight = panelheight * 100 / VIDEO_MIN_FRAME_HEIGHT;
+	if (byheight < largest) {
+		largest = byheight;
+	}
+
+	largest = (largest / VIDEO_ZOOM_STEP) * VIDEO_ZOOM_STEP;
+	if (largest < 100) {
+		largest = 100;
+	}
+	if (largest > VIDEO_MAX_ZOOM) {
+		largest = VIDEO_MAX_ZOOM;
+	}
+
+	return(largest);
+}
+
+
+/// <summary>
+/// The battle zoom in effect, in percent of the panel.
+/// Zero asks for the closest view the frame size allows, which is the size the battle
+/// interface was drawn for.
+/// </summary>
+/// <returns>int; One of the offered steps, never below 100.</returns>
 int Video_Zoom_Percent(void)
 {
-	int zoom = Options.ZoomPercent > 0 ? Options.ZoomPercent : 100;
+	int const largest = Video_Largest_Zoom();
+	int zoom = Options.ZoomPercent;
 
+	if (zoom <= 0) {
+		zoom = largest;
+	}
 	if (zoom < 100) {
 		zoom = 100;
 	}
-	if (zoom > VIDEO_MAX_ZOOM) {
-		zoom = VIDEO_MAX_ZOOM;
+	if (zoom > largest) {
+		zoom = largest;
 	}
 
 	return(zoom);
@@ -136,14 +184,30 @@ int Video_Zoom_Percent(void)
 
 /// <summary>
 /// The frame a battle renders at for the current zoom.
-/// The frame shrinks as the zoom grows, so the presenter fills the window with a picture
-/// that has fewer, larger pixels.
+/// The whole frame is drawn at the panel size divided by the zoom, then scaled back up, so a
+/// larger zoom shows fewer, bigger pixels.
 /// </summary>
 void Video_Zoom_Frame_Size(int & width, int & height)
 {
+	int panelwidth = 0;
+	int panelheight = 0;
+	Video_Panel_Size(panelwidth, panelheight);
+
+	if (panelwidth <= 0 || panelheight <= 0) {
+		panelwidth = VIDEO_MIN_FRAME_WIDTH;
+		panelheight = VIDEO_MIN_FRAME_HEIGHT;
+	}
+
 	int const zoom = Video_Zoom_Percent();
-	width = (640 * 100 + zoom / 2) / zoom;
-	height = (400 * 100 + zoom / 2) / zoom;
+	width = panelwidth * 100 / zoom;
+	height = panelheight * 100 / zoom;
+
+	if (width < VIDEO_MIN_FRAME_WIDTH) {
+		width = VIDEO_MIN_FRAME_WIDTH;
+	}
+	if (height < VIDEO_MIN_FRAME_HEIGHT) {
+		height = VIDEO_MIN_FRAME_HEIGHT;
+	}
 }
 
 

@@ -100,7 +100,7 @@ void UI_Display_State(UIDisplayState & state)
 
 	// The zoom choices name the percent of the base frame the battle is drawn in. Only the
 	// steps the smallest frame allows are listed.
-	int const zoom_steps[] = { 0, 125, 150, 200 };
+	int const zoom_steps[] = { 0, 100, 200, 300, 400, 500 };
 	for (int percent : zoom_steps) {
 		UIDisplayMode entry;
 		char buffer[32];

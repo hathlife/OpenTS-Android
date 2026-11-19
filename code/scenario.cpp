@@ -58,6 +58,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "always.h"
+#include "gamewindow.h"
 
 #include "scenario.h"
 
@@ -490,6 +491,7 @@ bool Start_Scenario(char const * name, bool briefing, CampaignType campaign)
 
 	ScenarioActive = true;
 	TacticalActive = true;
+	Game_Frame_Sync_To_Content(true);
 
 	return(true);
 }

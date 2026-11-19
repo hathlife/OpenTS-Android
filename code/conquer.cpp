@@ -66,6 +66,7 @@
 #include "misc.h"
 
 #include "mainopt.h"
+#include "gamewindow.h"
 
 #include "conquer.h"
 
@@ -468,6 +469,7 @@ void Main_Game(int argc, char * argv[])
 		}
 		Hide_Mouse();
 		ScenarioActive = false;
+	Game_Frame_Sync_To_Content(true);
 		TacticalActive = false;
 
 		DebugString("Game loop finished. Average FPS = %d\n", SecondsPassed ? TotalFrames / SecondsPassed : 0);
