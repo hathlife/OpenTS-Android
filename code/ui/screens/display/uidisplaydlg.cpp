@@ -117,7 +117,7 @@ void UI_Display_State(UIDisplayState & state)
 		state.Modes.push_back(entry);
 	}
 
-	int const sidebar_steps[] = { 0, 75, 50 };
+	int const sidebar_steps[] = { 0, 150, 200 };
 	for (int percent : sidebar_steps) {
 		UIDisplayMode entry;
 		char buffer[32];

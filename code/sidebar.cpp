@@ -2698,8 +2698,8 @@ void SidebarClass::Set_Width(int width)
 	if (width < SIDE_WIDTH / 2) {
 		width = SIDE_WIDTH / 2;
 	}
-	if (width > SIDE_WIDTH) {
-		width = SIDE_WIDTH;
+	if (width > SIDE_WIDTH * 2) {
+		width = SIDE_WIDTH * 2;
 	}
 	SidebarWidth = width;
 }
