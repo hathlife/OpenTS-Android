@@ -785,11 +785,9 @@ int main(int argc, char ** supplied_argv)
 		}
 
 #if defined(__ANDROID__)
-		// A battle zoom shrinks the frame from its base, so the saved resolution does not
-		// compound it from one start to the next.
-		if (Options.ZoomPercent > 0) {
-			Video_Zoom_Frame_Size(Options.ScreenWidth, Options.ScreenHeight);
-		}
+		// The frame follows what is on screen, so a saved resolution never decides it.
+		Options.ScreenWidth = 640;
+		Options.ScreenHeight = 400;
 #endif
 
 		int framewidth = Options.ScreenWidth;

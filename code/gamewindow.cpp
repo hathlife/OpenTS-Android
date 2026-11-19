@@ -22,6 +22,7 @@
 #include "goptions.h"
 #include "gscreen.h"
 #include "init.h"
+#include "mainopt.h"
 #include "misc.h"
 #include "movies.h"
 #include "queue.h"
@@ -77,8 +78,44 @@ static void Set_Game_Focus(bool focused)
 }
 
 
+#if defined(__ANDROID__)
+static bool _BattleFrame = false;
+#endif
+
+
+/// <summary>
+/// Sizes the frame for the content on screen: the base frame for the menus and the movies, the
+/// zoomed frame for a running battle. The sizes differ only on a battle, so a call from a menu
+/// leaves the frame alone.
+/// </summary>
+/// <param name="force">Re-apply the size even if the content did not change.</param>
+void Game_Frame_Sync_To_Content(bool force)
+{
+#if defined(__ANDROID__)
+	bool const battle = (ScenarioActive && !Movie_Is_Playing());
+	if (!force && battle == _BattleFrame) {
+		return;
+	}
+
+	int width = 640;
+	int height = 400;
+	if (battle) {
+		Video_Zoom_Frame_Size(width, height);
+	}
+
+	_BattleFrame = battle;
+
+	if (width != VideoModeWidth || height != VideoModeHeight) {
+		Change_Display_Mode(width, height);
+	}
+#endif
+}
+
+
 static void On_Paint(bool update_surface)
 {
+	Game_Frame_Sync_To_Content(false);
+
 	if (update_surface) {
 		if (MouseCursor != NULL && VisibleSurface != NULL && HiddenSurface != NULL && CompositeSurface != NULL) {
 			if (ScenarioActive == true) {

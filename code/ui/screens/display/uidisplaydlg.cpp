@@ -18,6 +18,7 @@
 #include "ui/uiview.h"
 #include "misc.h"
 
+#include "gamewindow.h"
 #include "mainopt.h"
 #include "video.h"
 #include "wwmouse.h"
@@ -59,13 +60,7 @@ class UIDisplayEngineServiceClass : public UIDisplayServiceClass
 		virtual void Set_Zoom(int percent) override
 		{
 			Options.ZoomPercent = percent;
-
-			int width = VideoModeWidth;
-			int height = VideoModeHeight;
-			Video_Zoom_Frame_Size(width, height);
-			if (width != VideoModeWidth || height != VideoModeHeight) {
-				Change_Display_Mode(width, height);
-			}
+			Game_Frame_Sync_To_Content(true);
 		}
 };
 
@@ -86,6 +81,9 @@ void UI_Display_State(UIDisplayState & state)
 	state.StretchMovies = Options.StretchMovies;
 	state.SystemCursor = Options.SystemCursor;
 
+	// One row is selected: a zoom that changes the frame size, otherwise the scale in use.
+	int selected = -1;
+
 	// The zoom choices name the percent of the base frame the battle is drawn in. Only the
 	// steps the smallest frame allows are listed.
 	int const zoom_steps[] = { 0, 125 };
@@ -99,46 +97,44 @@ void UI_Display_State(UIDisplayState & state)
 		}
 		entry.Label = buffer;
 		entry.Zoom = percent;
-		if (percent == Options.ZoomPercent) {
-			state.Selected = (int)state.Modes.size();
+		if (selected < 0 && percent != 0 && percent == Options.ZoomPercent) {
+			selected = (int)state.Modes.size();
 		}
 		state.Modes.push_back(entry);
 	}
 
-	// The scale choices come first and own the selection until a resolution is listed and
-	// picked; a chosen scale leaves the frame size alone.
 	char const * const scale_names[] = { "Fit the screen", "Whole pixels", "Actual size" };
 	for (int mode = 0; mode < 3; mode++) {
 		UIDisplayMode entry;
 		entry.Label = scale_names[mode];
 		entry.ViewScale = mode;
-		if (mode == Options.ViewScale) {
-			state.Selected = (int)state.Modes.size();
+		if (selected < 0 && mode == Options.ViewScale) {
+			selected = (int)state.Modes.size();
 		}
 		state.Modes.push_back(entry);
 	}
 
 	int * modes = EnumDisplayModes(MIN_WIDTH, MIN_HEIGHT, MAX_WIDTH, MAX_HEIGHT);
-	if (modes == NULL) {
-		return;
-	}
+	if (modes != NULL) {
+		for (int * entry = modes; *entry != 0; entry += 2) {
+			UIDisplayMode mode;
+			mode.Width = entry[0];
+			mode.Height = entry[1];
 
-	for (int * entry = modes; *entry != 0; entry += 2) {
-		UIDisplayMode mode;
-		mode.Width = entry[0];
-		mode.Height = entry[1];
+			char buffer[64];
+			std::snprintf(buffer, sizeof(buffer), "%d x %d", mode.Width, mode.Height);
+			mode.Label = buffer;
 
-		char buffer[64];
-		std::snprintf(buffer, sizeof(buffer), "%d x %d", mode.Width, mode.Height);
-		mode.Label = buffer;
-
-		if (mode.Width == Options.ScreenWidth && mode.Height == Options.ScreenHeight) {
-			state.Selected = (int)state.Modes.size();
+			if (selected < 0 && mode.Width == Options.ScreenWidth && mode.Height == Options.ScreenHeight) {
+				selected = (int)state.Modes.size();
+			}
+			state.Modes.push_back(mode);
 		}
-		state.Modes.push_back(mode);
+
+		delete [] modes;
 	}
 
-	delete [] modes;
+	state.Selected = selected;
 }
 
 

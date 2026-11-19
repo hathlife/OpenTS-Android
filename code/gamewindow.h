@@ -17,3 +17,5 @@ void Game_Window_Begin_Shutdown(void);
 void Game_Window_Close(void);
 
 void Game_Window_Handle_Event(WindowEvent const & event);
+
+void Game_Frame_Sync_To_Content(bool force);
