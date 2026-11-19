@@ -40,7 +40,9 @@ void UIDisplayPresenterClass::Execute(UIIntent const & intent)
 
 		if (State.Selected >= 0 && State.Selected != Initial) {
 			UIDisplayMode const & chosen = State.Modes[State.Selected];
-			if (chosen.ViewScale >= 0) {
+			if (chosen.Zoom >= 0) {
+				Service.Set_Zoom(chosen.Zoom);
+			} else if (chosen.ViewScale >= 0) {
 				Service.Set_View_Scale(chosen.ViewScale);
 			} else {
 				Picked = chosen;

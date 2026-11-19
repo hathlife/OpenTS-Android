@@ -16,6 +16,9 @@
 #include "ui/uienginehost.h"
 #include "ui/uishell.h"
 #include "ui/uiview.h"
+#include "misc.h"
+
+#include "mainopt.h"
 #include "video.h"
 #include "wwmouse.h"
 
@@ -52,6 +55,18 @@ class UIDisplayEngineServiceClass : public UIDisplayServiceClass
 			Options.ViewScale = mode;
 			Video_Refresh_View();
 		}
+
+		virtual void Set_Zoom(int percent) override
+		{
+			Options.ZoomPercent = percent;
+
+			int width = VideoModeWidth;
+			int height = VideoModeHeight;
+			Video_Zoom_Frame_Size(width, height);
+			if (width != VideoModeWidth || height != VideoModeHeight) {
+				Change_Display_Mode(width, height);
+			}
+		}
 };
 
 UIDisplayEngineServiceClass _Service;
@@ -70,6 +85,25 @@ void UI_Display_State(UIDisplayState & state)
 	state = UIDisplayState();
 	state.StretchMovies = Options.StretchMovies;
 	state.SystemCursor = Options.SystemCursor;
+
+	// The zoom choices name the percent of the base frame the battle is drawn in. Only the
+	// steps the smallest frame allows are listed.
+	int const zoom_steps[] = { 0, 125 };
+	for (int percent : zoom_steps) {
+		UIDisplayMode entry;
+		char buffer[32];
+		if (percent == 0) {
+			std::snprintf(buffer, sizeof(buffer), "Zoom 100%% (auto)");
+		} else {
+			std::snprintf(buffer, sizeof(buffer), "Zoom %d%%", percent);
+		}
+		entry.Label = buffer;
+		entry.Zoom = percent;
+		if (percent == Options.ZoomPercent) {
+			state.Selected = (int)state.Modes.size();
+		}
+		state.Modes.push_back(entry);
+	}
 
 	// The scale choices come first and own the selection until a resolution is listed and
 	// picked; a chosen scale leaves the frame size alone.

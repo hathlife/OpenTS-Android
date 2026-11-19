@@ -107,6 +107,46 @@ static void Update_Present_Interval(int refreshrate)
 /// The frame keeps its shape, so it is grown by whichever of the two axes runs out first
 /// and centered in what is left over.
 /// </summary>
+// The zoom steps in percent; the largest keeps the frame at the smallest size the battle
+// interface still lays out in, and goes up once the sidebar scales with the frame.
+constexpr int VIDEO_ZOOM_STEP = 25;
+constexpr int VIDEO_MIN_FRAME_WIDTH = 480;
+constexpr int VIDEO_MIN_FRAME_HEIGHT = 300;
+constexpr int VIDEO_MAX_ZOOM = 125;
+
+
+/// <summary>
+/// The battle zoom in effect, in percent of the base frame.
+/// </summary>
+/// <returns>int; At least 100 and no more than the largest the smallest frame allows.</returns>
+int Video_Zoom_Percent(void)
+{
+	int zoom = Options.ZoomPercent > 0 ? Options.ZoomPercent : 100;
+
+	if (zoom < 100) {
+		zoom = 100;
+	}
+	if (zoom > VIDEO_MAX_ZOOM) {
+		zoom = VIDEO_MAX_ZOOM;
+	}
+
+	return(zoom);
+}
+
+
+/// <summary>
+/// The frame a battle renders at for the current zoom.
+/// The frame shrinks as the zoom grows, so the presenter fills the window with a picture
+/// that has fewer, larger pixels.
+/// </summary>
+void Video_Zoom_Frame_Size(int & width, int & height)
+{
+	int const zoom = Video_Zoom_Percent();
+	width = (640 * 100 + zoom / 2) / zoom;
+	height = (400 * 100 + zoom / 2) / zoom;
+}
+
+
 /// <summary>
 /// The view mode the current content is drawn with.
 /// The intro and the menus are part of the frame, so they fill the window whatever mode the

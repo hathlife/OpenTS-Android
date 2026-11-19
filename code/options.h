@@ -189,6 +189,12 @@ class OptionsClass {
 		int ViewScale;
 
 		/*
+		 * How much a battle is magnified, in percent of the 640x400 base frame, or zero for
+		 * 100%. The frame shrinks by that factor and the presenter fills the window with it.
+		 */
+		int ZoomPercent;
+
+		/*
 		 * If presents are to wait for the display's refresh, then this flag will be true.
 		 * Presents are already limited to the refresh rate without it.
 		 */

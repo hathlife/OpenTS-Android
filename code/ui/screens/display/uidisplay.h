@@ -28,6 +28,9 @@ struct UIDisplayMode
 	// A view mode entry carries VideoViewMode here and no resolution; selecting it does not
 	// change the frame size.
 	int ViewScale = -1;
+
+	// A zoom entry carries the percent here; selecting it changes the battle frame size.
+	int Zoom = -1;
 };
 
 
@@ -38,6 +41,7 @@ class UIDisplayServiceClass
 		virtual void Set_Stretch_Movies(bool on) = 0;
 		virtual void Set_System_Cursor(bool on) = 0;
 		virtual void Set_View_Scale(int mode) = 0;
+		virtual void Set_Zoom(int percent) = 0;
 };
 
 
