@@ -788,6 +788,9 @@ int main(int argc, char ** supplied_argv)
 		// The frame follows what is on screen, so a saved resolution never decides it.
 		Options.ScreenWidth = 640;
 		Options.ScreenHeight = 400;
+
+		int const sidebar = (Options.SidebarPercent > 0) ? Options.SidebarPercent : 100;
+		SidebarClass::Set_Width(SidebarClass::SIDE_WIDTH * sidebar / 100);
 #endif
 
 		int framewidth = Options.ScreenWidth;
@@ -840,7 +843,7 @@ int main(int argc, char ** supplied_argv)
 
 		VisibleSurface->Fill(0);
 
-		Rect sidebar_rect(0,0,SidebarClass::SIDE_WIDTH,VisibleRect.Height);
+		Rect sidebar_rect(0,0,SidebarClass::SidebarWidth,VisibleRect.Height);
 		Rect tile_rect(0,0,VisibleRect.Width-sidebar_rect.Width, sidebar_rect.Height);
 		Rect composite_rect(0,0,VisibleRect.Width-sidebar_rect.Width, sidebar_rect.Height);
 

@@ -364,7 +364,7 @@ namespace MapCapture
 				return(false);
 			}
 
-			Rect const sidebar(0, 0, SidebarClass::SIDE_WIDTH, VisibleRect.Height);
+			Rect const sidebar(0, 0, SidebarClass::SidebarWidth, VisibleRect.Height);
 			if (!Allocate_Surfaces(VisibleRect, view, view, sidebar)
 					|| CompositeSurface == NULL || TileSurface == NULL
 					|| ((DSurface *)CompositeSurface)->Get_Buffer() == NULL

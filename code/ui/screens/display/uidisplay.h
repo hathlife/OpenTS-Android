@@ -31,6 +31,10 @@ struct UIDisplayMode
 
 	// A zoom entry carries the percent here; selecting it changes the battle frame size.
 	int Zoom = -1;
+
+	// A sidebar entry carries the percent here; selecting it changes how much of the battle
+	// frame the sidebar takes.
+	int Sidebar = -1;
 };
 
 
@@ -42,6 +46,7 @@ class UIDisplayServiceClass
 		virtual void Set_System_Cursor(bool on) = 0;
 		virtual void Set_View_Scale(int mode) = 0;
 		virtual void Set_Zoom(int percent) = 0;
+		virtual void Set_Sidebar(int percent) = 0;
 };
 
 

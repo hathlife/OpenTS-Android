@@ -77,6 +77,12 @@ class SidebarClass : public PowerClass
 			COLUMNS=2						// Number of side strips on sidebar.
 		};
 
+		// The width the sidebar is drawn at, in frame pixels. The artwork keeps its own
+		// SIDE_WIDTH layout and is scaled into this.
+		static int SidebarWidth;
+
+		static void Set_Width(int width);
+
 		static ShapeSet const * SidebarShape;
 
 		/*

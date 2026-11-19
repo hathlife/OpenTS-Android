@@ -112,7 +112,7 @@ static void Update_Present_Interval(int refreshrate)
 constexpr int VIDEO_ZOOM_STEP = 25;
 constexpr int VIDEO_MIN_FRAME_WIDTH = 480;
 constexpr int VIDEO_MIN_FRAME_HEIGHT = 300;
-constexpr int VIDEO_MAX_ZOOM = 125;
+constexpr int VIDEO_MAX_ZOOM = 200;
 
 
 /// <summary>

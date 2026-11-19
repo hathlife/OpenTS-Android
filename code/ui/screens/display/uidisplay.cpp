@@ -42,6 +42,8 @@ void UIDisplayPresenterClass::Execute(UIIntent const & intent)
 			UIDisplayMode const & chosen = State.Modes[State.Selected];
 			if (chosen.Zoom >= 0) {
 				Service.Set_Zoom(chosen.Zoom);
+			} else if (chosen.Sidebar >= 0) {
+				Service.Set_Sidebar(chosen.Sidebar);
 			} else if (chosen.ViewScale >= 0) {
 				Service.Set_View_Scale(chosen.ViewScale);
 			} else {

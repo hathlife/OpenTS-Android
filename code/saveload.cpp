@@ -753,12 +753,12 @@ static bool Get_All(SaveStreamClass & stream, bool save_net)
 	}
 
 	Rect temp = VisibleRect;
-	temp.X = ((Options.IsSidebarOnRight || Debug_Map) ? 0 : SidebarClass::SIDE_WIDTH);
+	temp.X = ((Options.IsSidebarOnRight || Debug_Map) ? 0 : SidebarClass::SidebarWidth);
 	temp.Y = 16;
-	temp.Width -= SidebarClass::SIDE_WIDTH;
+	temp.Width -= SidebarClass::SidebarWidth;
 	temp.Height -= 16;
 
-	Allocate_Surfaces(VisibleRect, Rect(0, 0, temp.Width, VisibleRect.Height), Rect(0, 0, temp.Width, VisibleRect.Height), Rect(0, 0, SidebarClass::SIDE_WIDTH, VisibleRect.Height));
+	Allocate_Surfaces(VisibleRect, Rect(0, 0, temp.Width, VisibleRect.Height), Rect(0, 0, temp.Width, VisibleRect.Height), Rect(0, 0, SidebarClass::SidebarWidth, VisibleRect.Height));
 
 	Map.Set_View_Dimensions(temp);
 

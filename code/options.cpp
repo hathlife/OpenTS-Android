@@ -147,6 +147,7 @@ OptionsClass::OptionsClass(void) :
 	ScaleMode(VIDEO_SCALE_PIXELART),
 	ViewScale(VIDEO_VIEW_FIT),
 	ZoomPercent(0),
+	SidebarPercent(0),
 	VSync(false),
 	Renderer(0),
 	CursorScale(0),
@@ -485,6 +486,7 @@ void OptionsClass::Load_Settings(void)
 	DebugString("ScaleMode is %d, ViewScale is %d\n", ScaleMode, ViewScale);
 
 	ZoomPercent = ConfigINI.Get_Int("Video", "Zoom", ZoomPercent);
+	SidebarPercent = ConfigINI.Get_Int("Video", "Sidebar", SidebarPercent);
 
 	CursorScale = ConfigINI.Get_Int("Video", "CursorScale", CursorScale);
 	SystemCursor = ConfigINI.Get_Bool("Video", "SystemCursor", SystemCursor);
@@ -556,6 +558,7 @@ void OptionsClass::Save_Settings (void)
 	ConfigINI.Put_String("Video", "ScaleMode", (char *)Scale_Mode_Name(ScaleMode));
 	ConfigINI.Put_String("Video", "ViewScale", (char *)View_Scale_Name(ViewScale));
 	ConfigINI.Put_Int("Video", "Zoom", ZoomPercent);
+	ConfigINI.Put_Int("Video", "Sidebar", SidebarPercent);
 	ConfigINI.Put_Bool("Video", "IntegerScaling", ViewScale == VIDEO_VIEW_INTEGER);
 	ConfigINI.Put_Bool("Video", "VSync", VSync);
 	ConfigINI.Put_Int("Video", "Renderer", Renderer);

@@ -17,6 +17,7 @@
 #include "ui/uishell.h"
 #include "ui/uiview.h"
 #include "misc.h"
+#include "sidebar.h"
 
 #include "gamewindow.h"
 #include "mainopt.h"
@@ -62,6 +63,19 @@ class UIDisplayEngineServiceClass : public UIDisplayServiceClass
 			Options.ZoomPercent = percent;
 			Game_Frame_Sync_To_Content(true);
 		}
+
+		virtual void Set_Sidebar(int percent) override
+		{
+			Options.SidebarPercent = percent;
+
+			int const sidebar = (percent > 0) ? percent : 100;
+			SidebarClass::Set_Width(SidebarClass::SIDE_WIDTH * sidebar / 100);
+
+			// The battle split is held in the surfaces, so a running one is rebuilt.
+			if (ScenarioActive) {
+				Change_Display_Mode(VideoModeWidth, VideoModeHeight);
+			}
+		}
 };
 
 UIDisplayEngineServiceClass _Service;
@@ -86,7 +100,7 @@ void UI_Display_State(UIDisplayState & state)
 
 	// The zoom choices name the percent of the base frame the battle is drawn in. Only the
 	// steps the smallest frame allows are listed.
-	int const zoom_steps[] = { 0, 125 };
+	int const zoom_steps[] = { 0, 125, 150, 200 };
 	for (int percent : zoom_steps) {
 		UIDisplayMode entry;
 		char buffer[32];
@@ -98,6 +112,23 @@ void UI_Display_State(UIDisplayState & state)
 		entry.Label = buffer;
 		entry.Zoom = percent;
 		if (selected < 0 && percent != 0 && percent == Options.ZoomPercent) {
+			selected = (int)state.Modes.size();
+		}
+		state.Modes.push_back(entry);
+	}
+
+	int const sidebar_steps[] = { 0, 75, 50 };
+	for (int percent : sidebar_steps) {
+		UIDisplayMode entry;
+		char buffer[32];
+		if (percent == 0) {
+			std::snprintf(buffer, sizeof(buffer), "Sidebar 100%%");
+		} else {
+			std::snprintf(buffer, sizeof(buffer), "Sidebar %d%%", percent);
+		}
+		entry.Label = buffer;
+		entry.Sidebar = percent;
+		if (selected < 0 && percent != 0 && percent == Options.SidebarPercent) {
 			selected = (int)state.Modes.size();
 		}
 		state.Modes.push_back(entry);

@@ -254,10 +254,10 @@ void DisplayClass::One_Time(void)
 	if (Options.IsSidebarOnRight || Debug_Map) {
 		rect.X = 0;
 	} else {
-		rect.X = SidebarClass::SIDE_WIDTH;
+		rect.X = SidebarClass::SidebarWidth;
 	}
 	rect.Y = 16;
-	rect.Width = rect.Width - SidebarClass::SIDE_WIDTH;
+	rect.Width = rect.Width - SidebarClass::SidebarWidth;
 	rect.Height = rect.Height - 16;
 	Set_View_Dimensions(rect);
 }

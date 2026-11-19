@@ -195,6 +195,12 @@ class OptionsClass {
 		int ZoomPercent;
 
 		/*
+		 * How wide the sidebar is drawn, in percent of its artwork, or zero for 100%. A
+		 * narrower sidebar leaves more of a zoomed battle frame to the battlefield.
+		 */
+		int SidebarPercent;
+
+		/*
 		 * If presents are to wait for the display's refresh, then this flag will be true.
 		 * Presents are already limited to the refresh rate without it.
 		 */
