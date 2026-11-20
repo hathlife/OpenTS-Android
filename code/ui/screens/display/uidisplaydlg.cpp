@@ -52,30 +52,12 @@ class UIDisplayEngineServiceClass : public UIDisplayServiceClass
 			Refresh_Window_Arrow();
 		}
 
-		virtual void Set_View_Scale(int mode) override
-		{
-			Options.ViewScale = mode;
-			Video_Refresh_View();
-		}
-
 		virtual void Set_Zoom(int percent) override
 		{
 			Options.ZoomPercent = percent;
 			Game_Frame_Sync_To_Content(true);
 		}
 
-		virtual void Set_Sidebar(int percent) override
-		{
-			Options.SidebarPercent = percent;
-
-			int const sidebar = (percent > 0) ? percent : 100;
-			SidebarClass::Set_Width(SidebarClass::SIDE_WIDTH * sidebar / 100);
-
-			// The battle split is held in the surfaces, so a running one is rebuilt.
-			if (ScenarioActive) {
-				Change_Display_Mode(VideoModeWidth, VideoModeHeight);
-			}
-		}
 };
 
 UIDisplayEngineServiceClass _Service;
@@ -98,48 +80,24 @@ void UI_Display_State(UIDisplayState & state)
 	// One row is selected: a zoom that changes the frame size, otherwise the scale in use.
 	int selected = -1;
 
-	// The zoom choices name the percent of the base frame the battle is drawn in. Only the
-	// steps the smallest frame allows are listed.
+	// Each row names the frame that zoom produces, so the cost of a wider view is visible
+	// before it is chosen.
 	int const zoom_steps[] = { 0, 100, 200, 300, 400, 500 };
 	for (int percent : zoom_steps) {
 		UIDisplayMode entry;
-		char buffer[32];
+		int width = 0;
+		int height = 0;
+		Video_Zoom_Frame_For(percent, width, height);
+
+		char buffer[48];
 		if (percent == 0) {
-			std::snprintf(buffer, sizeof(buffer), "Zoom 100%% (auto)");
+			std::snprintf(buffer, sizeof(buffer), "%d x %d  %d%% (auto)", width, height, Video_Largest_Zoom_Percent());
 		} else {
-			std::snprintf(buffer, sizeof(buffer), "Zoom %d%%", percent);
+			std::snprintf(buffer, sizeof(buffer), "%d x %d  %d%%", width, height, percent);
 		}
 		entry.Label = buffer;
 		entry.Zoom = percent;
 		if (selected < 0 && percent != 0 && percent == Options.ZoomPercent) {
-			selected = (int)state.Modes.size();
-		}
-		state.Modes.push_back(entry);
-	}
-
-	int const sidebar_steps[] = { 0, 150, 200 };
-	for (int percent : sidebar_steps) {
-		UIDisplayMode entry;
-		char buffer[32];
-		if (percent == 0) {
-			std::snprintf(buffer, sizeof(buffer), "Sidebar 100%%");
-		} else {
-			std::snprintf(buffer, sizeof(buffer), "Sidebar %d%%", percent);
-		}
-		entry.Label = buffer;
-		entry.Sidebar = percent;
-		if (selected < 0 && percent != 0 && percent == Options.SidebarPercent) {
-			selected = (int)state.Modes.size();
-		}
-		state.Modes.push_back(entry);
-	}
-
-	char const * const scale_names[] = { "Fit the screen", "Whole pixels", "Actual size" };
-	for (int mode = 0; mode < 3; mode++) {
-		UIDisplayMode entry;
-		entry.Label = scale_names[mode];
-		entry.ViewScale = mode;
-		if (selected < 0 && mode == Options.ViewScale) {
 			selected = (int)state.Modes.size();
 		}
 		state.Modes.push_back(entry);

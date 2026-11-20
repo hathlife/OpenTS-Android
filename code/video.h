@@ -59,6 +59,8 @@ void Video_Frame_Size(int width, int height, int & framewidth, int & frameheight
 void Video_Refresh_View(void);
 
 int Video_Zoom_Percent(void);
+int Video_Largest_Zoom_Percent(void);
+void Video_Zoom_Frame_For(int percent, int & width, int & height);
 void Video_Zoom_Frame_Size(int & width, int & height);
 void Video_On_Resize(int drawablewidth, int drawableheight);
 void Video_Set_Refresh_Rate(int refreshrate);

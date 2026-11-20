@@ -157,6 +157,12 @@ static int Video_Largest_Zoom(void)
 }
 
 
+int Video_Largest_Zoom_Percent(void)
+{
+	return(Video_Largest_Zoom());
+}
+
+
 /// <summary>
 /// The battle zoom in effect, in percent of the panel.
 /// Zero asks for the closest view the frame size allows, which is the size the battle
@@ -187,7 +193,7 @@ int Video_Zoom_Percent(void)
 /// The whole frame is drawn at the panel size divided by the zoom, then scaled back up, so a
 /// larger zoom shows fewer, bigger pixels.
 /// </summary>
-void Video_Zoom_Frame_Size(int & width, int & height)
+void Video_Zoom_Frame_For(int percent, int & width, int & height)
 {
 	int panelwidth = 0;
 	int panelheight = 0;
@@ -198,7 +204,17 @@ void Video_Zoom_Frame_Size(int & width, int & height)
 		panelheight = VIDEO_MIN_FRAME_HEIGHT;
 	}
 
-	int const zoom = Video_Zoom_Percent();
+	int zoom = percent;
+
+	if (zoom <= 0) {
+		zoom = Video_Largest_Zoom();
+	}
+	if (zoom < 100) {
+		zoom = 100;
+	}
+	if (zoom > VIDEO_MAX_ZOOM) {
+		zoom = VIDEO_MAX_ZOOM;
+	}
 	width = panelwidth * 100 / zoom;
 	height = panelheight * 100 / zoom;
 
@@ -208,6 +224,12 @@ void Video_Zoom_Frame_Size(int & width, int & height)
 	if (height < VIDEO_MIN_FRAME_HEIGHT) {
 		height = VIDEO_MIN_FRAME_HEIGHT;
 	}
+}
+
+
+void Video_Zoom_Frame_Size(int & width, int & height)
+{
+	Video_Zoom_Frame_For(Options.ZoomPercent, width, height);
 }
 
 
