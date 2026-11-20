@@ -80,8 +80,18 @@
         <meta-data android:name="SDL_ENV.SDL_ANDROID_TRAP_BACK_BUTTON" android:value="0"/>
          -->
 
+        <!--
+            Android 16 ignores an orientation request on a large screen unless the app says
+            it takes part in that restriction, and the game has no portrait layout to fall
+            back on, so turning the phone used to leave a black screen.
+        -->
+        <property
+            android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_ORIENTATION"
+            android:value="true" />
+
         <activity android:name="net.opents.android.OpenTSActivity"
-            android:screenOrientation="landscape"
+            android:screenOrientation="sensorLandscape"
+            android:resizeableActivity="false"
             android:label="@string/app_name"
             android:alwaysRetainTaskState="true"
             android:launchMode="singleInstance"
