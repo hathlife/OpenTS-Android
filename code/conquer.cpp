@@ -86,6 +86,8 @@
 #include "chat.h"
 #include "data.h"
 #include "dbgprint.h"
+#include "_deploymentconfig.h"
+#include "deploymentconfig.h"
 #include "audio/audioengine.h"
 #include "desyncdlg.h"
 #include "gamedirs.h"
@@ -126,6 +128,7 @@
 #include "tactical.h"
 #include "theme.h"
 #include "ui/screens/diplomacy/uidiplomacy.h"
+#include "ui/screens/import/uiimport.h"
 #include "uitooltip.h"
 #include "unittype.h"
 #include "voc.h"
@@ -352,6 +355,16 @@ void Ingame_Menu_Dialog(void)
 void Main_Game(int argc, char * argv[])
 {
 	static bool fade = true;
+
+#if defined(__ANDROID__)
+	if (!CCFileClass("TIBSUN.MIX").Is_Available()) {
+		if (!UI_Import_Dialog(Data_Directory())) {
+			return;
+		}
+		DeploymentConfig.Read_File(Data_Directory().c_str());
+		Init_Search_Folders(DeploymentConfig.SearchPaths.c_str());
+	}
+#endif
 
 	/*
 	**	Perform one-time-only initializations

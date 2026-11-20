@@ -100,7 +100,9 @@ class UIEngineHostClass : public UIShellHostClass
 
 		virtual void Play_Click(void) override
 		{
-			Sound_Effect(Rule->GenericClick);
+			if (Rule != NULL) {
+				Sound_Effect(Rule->GenericClick);
+			}
 		}
 
 		virtual bool Animate_Screens(void) const override
