@@ -1,7 +1,9 @@
 package net.opents.android
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.DocumentsContract
@@ -264,6 +266,18 @@ class OpenTSActivity : SDLActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         extractAssets("ui", File(filesDir, "ui"))
         super.onCreate(savedInstanceState)
+        setTaskIcon()
+    }
+
+    /**
+     * Names the entry in the task switcher: its icon is the launcher's, taken from the same
+     * artwork the window icon uses, so the card does not fall back to the system default.
+     */
+    private fun setTaskIcon() {
+        val icon = BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher_round) ?: return
+        setTaskDescription(
+            ActivityManager.TaskDescription(getString(R.string.app_name), icon)
+        )
     }
 
     /**
