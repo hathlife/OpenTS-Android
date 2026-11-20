@@ -59,6 +59,11 @@ std::vector<std::pair<int, int>> Main_Window_Fullscreen_Sizes(void);
 
 void Main_Window_Pump_Events(void);
 
+// Asks the platform for typed text, which raises the soft keyboard on Android, and gives it
+// back when the game has finished with it.
+void Main_Window_Start_Text_Input(void);
+void Main_Window_Stop_Text_Input(void);
+
 // Requests made before a pump reach the game as one WINDOW_EVENT_EXPOSED.
 void Main_Window_Request_Repaint(void);
 

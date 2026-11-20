@@ -530,6 +530,32 @@ bool Main_Window_Create(bool windowed, int width, int height, MainWindowIcon con
 }
 
 
+/// <summary>
+/// Asks the platform to deliver typed characters, which raises the soft keyboard on Android.
+/// </summary>
+void Main_Window_Start_Text_Input(void)
+{
+	if (_Window != nullptr) {
+		// A device that reports any keyboard of its own keeps SDL from raising the soft one,
+		// so the game asks for it on purpose here.
+		SDL_SetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD, "1");
+		SDL_StartTextInput(_Window);
+	}
+}
+
+
+/// <summary>
+/// Tells the platform the game has stopped reading typed characters, which puts the soft
+/// keyboard away again.
+/// </summary>
+void Main_Window_Stop_Text_Input(void)
+{
+	if (_Window != nullptr) {
+		SDL_StopTextInput(_Window);
+	}
+}
+
+
 NativeWindow Main_Window_Native(void)
 {
 	NativeWindow window = { NATIVE_WINDOW_DEFAULT, nullptr, nullptr };

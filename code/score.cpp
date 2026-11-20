@@ -45,6 +45,7 @@
 #include "always.h"
 
 #include "score.h"
+#include "sdl/sdlwindow.h"
 
 #include "_keyboar.h"
 #include "_mixfile.h"
@@ -909,6 +910,8 @@ void ScoreClass::Input_Name(char str[], int xpos, int ypos)
 	int key = 0;
 	int index = 0;
 
+	Main_Window_Start_Text_Input();
+
 	do {
 
 		Timing();
@@ -983,6 +986,8 @@ void ScoreClass::Input_Name(char str[], int xpos, int ypos)
 		Call_Back_Delay(1);
 
 	} while (key != KN_RETURN);
+
+	Main_Window_Stop_Text_Input();
 }
 
 
