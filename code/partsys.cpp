@@ -493,7 +493,7 @@ void ParticleSystemClass::Smoke_AI(void)
 		}
 	}
 
-	if (!IsMarkedForDeletion && IsActive && (Frame % (int)SpawnFrames) == 0) {
+	if (!IsMarkedForDeletion && IsActive && Source != NULL && (Frame % (int)SpawnFrames) == 0) {
 		FootClass *foot = Source->As_FootClass();
 		if (foot == NULL || foot->CurrentTube < 0) {
 			int xrand = Scen->RandomNumber();

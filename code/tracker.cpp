@@ -109,6 +109,10 @@ void Detach_This_From_All(AbstractClass const * target, bool all)
 		GasSystem = NULL;
 	}
 
+	for (index = 0; index < ParticleSystems.Count(); index++) {
+		ParticleSystems[index]->Detach(target, all);
+	}
+
 	if (target->RTTI == RTTI_HOUSE) {
 		for (index = 0; index < HousePtrTracker.Count(); index++) {
 			HousePtrTracker[index]->Detach(target, all);
