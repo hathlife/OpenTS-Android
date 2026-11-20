@@ -207,7 +207,7 @@ void TriggerClass::Reset_Global_Linked_Timed_Events(int global)
 {
 	TriggerClass * tp = this;
 	while (tp != NULL) {
-		if (tp->Class->Is_Linked_To_Global(global)) {
+		if (tp->Class != NULL && tp->Class->Is_Linked_To_Global(global)) {
 			tp->Reset_All_Timed_Events();
 		}
 		tp = tp->LinkedTo;
@@ -225,7 +225,7 @@ void TriggerClass::Reset_Local_Linked_Timed_Events(int local)
 {
 	TriggerClass * tp = this;
 	while (tp != NULL) {
-		if (tp->Class->Is_Linked_To_Local(local)) {
+		if (tp->Class != NULL && tp->Class->Is_Linked_To_Local(local)) {
 			tp->Reset_All_Timed_Events();
 		}
 		tp = tp->LinkedTo;
@@ -409,9 +409,6 @@ void TriggerClass::Detach(AbstractClass const * target, bool all)
 {
 	BASECLASS::Detach(target, all);
 
-	if (Class == target) {
-		Class = NULL;
-	}
 	if (LinkedTo == target) {
 		LinkedTo = LinkedTo->LinkedTo;
 	}
