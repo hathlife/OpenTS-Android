@@ -59,6 +59,10 @@ class UIShellClass
 		void Play_Click(void);
 
 		void On_Video_Change(void);
+
+	// The renderer behind the interface was restarted, so every picture it was holding has
+	// to be read again.
+	void On_Renderer_Restart(void);
 		void On_Archives_Change(int side);
 		std::string Side_Sheet(void) const;
 		void Tick(void);

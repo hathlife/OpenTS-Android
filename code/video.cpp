@@ -52,6 +52,7 @@ int VideoModeHeight = 0;
 bool WindowedMode = false;
 
 static bool _Initialized = false;
+static void * _BackendWindow = nullptr;
 static VideoScaleInfo _ScaleInfo;
 
 static VideoDirtyStateClass _Dirty;
@@ -306,6 +307,8 @@ bool Video_Init(NativeWindow const & window, int drawablewidth, int drawableheig
 		return(false);
 	}
 
+	_BackendWindow = window.Handle;
+
 	DebugString("Video: renderer is %s\n", Backend_Renderer_Name());
 
 	_Initialized = true;
@@ -438,6 +441,53 @@ void Video_On_Resize(int drawablewidth, int drawableheight)
 /// <summary>
 /// Sets the refresh rate used to pace presentation.
 /// </summary>
+void Video_On_Surface_Restored(void)
+{
+	if (!_Initialized) {
+		return;
+	}
+
+	/*
+	 * Android hands the game a different window when it comes back from the task switcher,
+	 * and the backend keeps the old one until it is started again, so the presenter is shut
+	 * down and rebuilt on the window that is current now.
+	 */
+	NativeWindow window = Main_Window_Native();
+	int drawablewidth = 0;
+	int drawableheight = 0;
+	Main_Window_Drawable_Size(drawablewidth, drawableheight);
+
+	if (window.Handle == nullptr || drawablewidth <= 0 || drawableheight <= 0) {
+		return;
+	}
+
+	// The window is the same one the backend was built on, so the surface is merely stale and
+	// the interface keeps its pictures.
+	if (window.Handle == _BackendWindow) {
+		Backend_On_Resize(drawablewidth, drawableheight);
+		Update_Scale_Info();
+		Refresh_Mouse_Pointer();
+		UIShell.On_Video_Change();
+		Video_Mark_Overlay_Dirty();
+		_Dirty.Invalidate_Frame();
+		return;
+	}
+
+	Backend_Shutdown();
+	_Initialized = false;
+
+	if (!Video_Init(window, drawablewidth, drawableheight, Main_Window_Refresh_Rate())) {
+		return;
+	}
+
+	Backend_Set_Frame_Size(VideoModeWidth, VideoModeHeight);
+	UIShell.On_Renderer_Restart();
+	UIShell.On_Video_Change();
+	Video_Mark_Overlay_Dirty();
+	_Dirty.Invalidate_Frame();
+}
+
+
 void Video_Set_Refresh_Rate(int refreshrate)
 {
 	if (!_Initialized) {

@@ -239,6 +239,17 @@ void UIShellClass::Apply_Dimensions(void)
 }
 
 
+void UIShellClass::On_Renderer_Restart(void)
+{
+	if (!Ready) {
+		return;
+	}
+
+	Rml::ReleaseTextures(Render.get());
+	Host.Mark_Overlay_Dirty();
+}
+
+
 void UIShellClass::Drop_Cached_Files(void)
 {
 	Rml::ReleaseTextures(Render.get());

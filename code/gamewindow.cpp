@@ -217,8 +217,14 @@ static bool Handle_Event(WindowEvent const & event)
 			break;
 
 		case WINDOW_EVENT_FOCUS_GAINED:
+			// Coming back from the task switcher leaves the old swap chain behind, and the
+			// game then runs with a black picture until a new one is built.
+			Video_On_Surface_Restored();
+			Set_Game_Focus(true);
+			return(false);
+
 		case WINDOW_EVENT_FOCUS_LOST:
-			Set_Game_Focus(event.Type == WINDOW_EVENT_FOCUS_GAINED);
+			Set_Game_Focus(false);
 			return(false);
 
 		case WINDOW_EVENT_MOUSE_UP:

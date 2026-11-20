@@ -63,6 +63,10 @@ int Video_Largest_Zoom_Percent(void);
 void Video_Zoom_Frame_For(int percent, int & width, int & height);
 void Video_Zoom_Frame_Size(int & width, int & height);
 void Video_On_Resize(int drawablewidth, int drawableheight);
+
+// Rebuilds the swap chain after the platform took the window away, as it does when the player
+// switches to another app and comes back.
+void Video_On_Surface_Restored(void);
 void Video_Set_Refresh_Rate(int refreshrate);
 
 void Video_Mark_Dirty(void);
