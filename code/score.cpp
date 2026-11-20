@@ -56,6 +56,8 @@
 #include "convert.h"
 #include "data.h"
 #include "dbgprint.h"
+#include "mainopt.h"
+#include "video.h"
 #include "draw.h"
 #include "dsurface.h"
 #include "goptions.h"
@@ -125,6 +127,15 @@ void ScoreClass::Presentation(void)
 
 	CCFileClass file;
 	struct Fame hallfame[NUMFAMENAMES];
+
+	/*
+	 * The score screen is composed as a 640x400 picture and blitted at the centre of
+	 * whatever frame is in use. The battle frame is zoomed, so it is switched to the size
+	 * the picture was drawn for and the picture then fills the screen.
+	 */
+	if (VideoModeWidth != 640 || VideoModeHeight != 400) {
+		Change_Display_Mode(640, 400);
+	}
 
 	XPos = (HiddenSurface->Get_Width() - 640) / 2;
 	YPos = (HiddenSurface->Get_Height() - 400) / 2;
