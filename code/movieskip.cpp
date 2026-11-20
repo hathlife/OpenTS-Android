@@ -32,6 +32,10 @@
 #include "surface.h"
 #include "timer.h"
 
+#if defined(__ANDROID__)
+#include "sdl/touchmap.h"
+#endif
+
 #include "color.hh"
 #include "dialog.hh"
 
@@ -54,6 +58,7 @@ namespace MovieSkip
 		struct VoteState
 		{
 			bool IsActive = false;
+			bool IsEva = false;
 			unsigned int Movie = 0;
 			unsigned int Instance = 0;
 			std::array<bool, MAX_PLAYERS> Votes = {};
@@ -66,6 +71,13 @@ namespace MovieSkip
 		int LocalScopeDepth = 0;
 		unsigned int LastIgnoredMovie = 0;
 		unsigned int LastIgnoredInstance = 0;
+
+
+		/// <summary>Is this one of EVA's own transmissions rather than a story film?</summary>
+		bool Is_Eva_Movie(char const * name)
+		{
+			return(name != NULL && strncasecmp(name, "EVA", 3) == 0);
+		}
 
 
 		/// <summary>Whether the machines of this session keep in step while a movie plays.</summary>
@@ -167,6 +179,8 @@ namespace MovieSkip
 	Playback::Playback(char const * name)
 	{
 		State = VoteState();
+		State.IsEva = Is_Eva_Movie(name);
+
 		if (!Is_Network_Game()) {
 			return;
 		}
@@ -212,7 +226,21 @@ namespace MovieSkip
 	/// </summary>
 	bool Idle(void)
 	{
-		bool const escape = Keyboard->Check() && Keyboard->Get() == (KN_ESC|WWKEY_RLS_BIT);
+		bool escape = false;
+		if (Keyboard->Check()) {
+			escape = (Keyboard->Get() == (KN_ESC|WWKEY_RLS_BIT));
+		}
+
+#if defined(__ANDROID__)
+		// A touchscreen offers no Escape key, so a contact ends the film the way the key does.
+		// A mouse the player plugged in keeps to the desktop rule, and EVA's own transmission
+		// is left to play out.
+		if (!escape && !State.IsEva && Touch_Button_Down(SDL_BUTTON_LEFT)) {
+			DebugString("Movie skip: a touch ends the film.\n");
+			escape = true;
+		}
+#endif
+
 		if (!State.IsActive) {
 			return(escape);
 		}
