@@ -965,7 +965,7 @@ bool Map_Edit_Loop(void)
 static void Resize_Tactical_View(bool flag)
 {
 	static int _tab_height = 16;
-	static int _sidebar_width = SidebarClass::SidebarWidth;
+	static int _sidebar_width = SidebarClass::SIDE_WIDTH;
 
 	if (flag) {
 

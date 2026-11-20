@@ -436,46 +436,6 @@ bool DSurface::Unlock(void) const
  * HISTORY:                                                                                    *
  *   02/07/1997 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool DSurface::Blit_Stretch(Rect const & destrect, Surface const & ssource, Rect const & sourcerect)
-{
-	if (!destrect.Is_Valid() || !sourcerect.Is_Valid()) {
-		return(false);
-	}
-
-	DSurface const & source = (DSurface const &)ssource;
-	if (Get_Buffer() == NULL || source.Get_Buffer() == NULL) {
-		return(false);
-	}
-
-	Rect dest = Intersect(destrect, Get_Rect());
-	if (!dest.Is_Valid()) {
-		return(false);
-	}
-
-	unsigned char const * src = (unsigned char const *)source.Get_Buffer();
-	unsigned char const * srow = src + (std::size_t)sourcerect.Y * (std::size_t)source.Stride();
-	unsigned char * dst = (unsigned char *)Get_Buffer();
-	unsigned char * drow = dst + (std::size_t)dest.Y * (std::size_t)Stride();
-
-	for (int y = 0; y < dest.Height; y++) {
-		int const sy = sourcerect.Y + (int)((std::int64_t)(dest.Y - destrect.Y + y) * sourcerect.Height / destrect.Height);
-		unsigned short const * sline = (unsigned short const *)(src + (std::size_t)sy * (std::size_t)source.Stride());
-		unsigned short * dline = (unsigned short *)(drow + (std::size_t)y * (std::size_t)Stride());
-
-		for (int x = 0; x < dest.Width; x++) {
-			int const sx = sourcerect.X + (int)((std::int64_t)(dest.X - destrect.X + x) * sourcerect.Width / destrect.Width);
-			dline[dest.X + x] = sline[sx];
-		}
-	}
-
-	if (IsPrimary) {
-		Video_Mark_Dirty();
-	}
-
-	return(true);
-}
-
-
 bool DSurface::Blit_From(Rect const & destrect, Surface const & ssource, Rect const & sourcerect, bool trans, bool unknown)
 {
 	return(Blit_From(Get_Rect(), destrect, ssource, ssource.Get_Rect(), sourcerect, trans, unknown));

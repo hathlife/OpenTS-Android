@@ -1042,9 +1042,7 @@ void SidebarClass::Blit_Sidebar(bool complete)
 			IsToBlitSidebar = true;
 		}
 
-		if (SidebarWidth != SIDE_WIDTH) {
-			((DSurface *)VisibleSurface)->Blit_Stretch(Rect((Options.IsSidebarOnRight ? TacticalRect.Width : 0), 0, SidebarWidth, VisibleSurface->Get_Height()), *SidebarSurface, SidebarSurface->Get_Rect());
-		} else if (Map.LastDrawRect == RECT_NONE && !complete) {
+		if (Map.LastDrawRect == RECT_NONE && !complete) {
 			VisibleSurface->Blit_From(Rect((Options.IsSidebarOnRight ? TacticalRect.Width : 0), 0, SIDE_WIDTH, CREDITS_HEIGHT), *SidebarSurface, Rect(0, 0, SIDE_WIDTH, CREDITS_HEIGHT));
 			VisibleSurface->Blit_From(Rect((Options.IsSidebarOnRight ? TacticalRect.Width : 0), SIDE_BODY_Y, SIDE_WIDTH, SidebarSurface->Get_Height() - SIDE_BODY_Y), *SidebarSurface, Rect(0, SIDE_BODY_Y, SIDE_WIDTH, SidebarSurface->Get_Height() - SIDE_BODY_Y));
 		} else if (!IsToBlitSidebar) {
@@ -1082,10 +1080,7 @@ void SidebarClass::Blit_Sidebar(bool complete)
  *=============================================================================================*/
 void SidebarClass::AI(KeyNumType & input, Point2D const & xy)
 {
-	Point2D xy_rel = xy - Point2D(VideoModeWidth - SidebarWidth, 0);
-	if (SidebarWidth > 0 && SidebarWidth != SIDE_WIDTH) {
-		xy_rel.X = xy_rel.X * SIDE_WIDTH / SidebarWidth;
-	}
+	Point2D xy_rel = xy - Point2D(480, 0);
 
 	if (!Debug_Map) {
 		Activate(1);	// Force the sidebar always on in Win95 mode
@@ -2690,21 +2685,6 @@ bool SidebarClass::StripClass::Abandon_Production(FactoryClass const * factory)
 /// and then the mode buttons, scroll arrows, cameo buttons and their tooltip regions are
 /// moved to suit.
 /// </summary>
-int SidebarClass::SidebarWidth = SIDE_WIDTH;
-
-
-void SidebarClass::Set_Width(int width)
-{
-	if (width < SIDE_WIDTH / 2) {
-		width = SIDE_WIDTH / 2;
-	}
-	if (width > SIDE_WIDTH * 2) {
-		width = SIDE_WIDTH * 2;
-	}
-	SidebarWidth = width;
-}
-
-
 void SidebarClass::Reposition_Sidebar(void)
 {
 	int index;
@@ -2714,7 +2694,7 @@ void SidebarClass::Reposition_Sidebar(void)
 	 */
 	SidebarRect.X = Options.IsSidebarOnRight ? TacticalRect.X + TacticalRect.Width : 0;
 	SidebarRect.Y = SIDE_Y;
-	SidebarRect.Width = SidebarWidth;
+	SidebarRect.Width = SIDE_WIDTH;
 	SidebarRect.Height = TacticalRect.Height + TacticalRect.Y - SIDE_Y;
 
 	BASECLASS::Reposition_Sidebar();

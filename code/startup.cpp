@@ -841,7 +841,7 @@ int main(int argc, char ** supplied_argv)
 
 		VisibleSurface->Fill(0);
 
-		Rect sidebar_rect(0,0,SidebarClass::SidebarWidth,VisibleRect.Height);
+		Rect sidebar_rect(0,0,SidebarClass::SIDE_WIDTH,VisibleRect.Height);
 		Rect tile_rect(0,0,VisibleRect.Width-sidebar_rect.Width, sidebar_rect.Height);
 		Rect composite_rect(0,0,VisibleRect.Width-sidebar_rect.Width, sidebar_rect.Height);
 

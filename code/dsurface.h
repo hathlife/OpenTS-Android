@@ -77,9 +77,6 @@ class DSurface : public XSurface
 		virtual bool Blit_From(Rect const & dcliprect, Rect const & destrect, Surface const & source, Rect const & scliprect, Rect const & sourcerect, bool trans=false, bool unknown=true) override;
 		virtual bool Blit_From(Rect const & destrect, Surface const & source, Rect const & sourcerect, bool trans=false, bool unknown=true) override;
 
-	// Copies source into destrect with nearest-neighbour scaling, for surfaces the game can
-	// draw at a size other than the one they were made.
-	bool Blit_Stretch(Rect const & destrect, Surface const & source, Rect const & sourcerect);
 		virtual bool Blit_From(Surface const & source, bool trans=false, bool unknown=true) override {return(BASECLASS::Blit_From(source, trans, unknown));}
 
 		/*

@@ -160,12 +160,12 @@ bool Change_Display_Mode(int width, int height)
 	}
 
 	Rect temp = VisibleRect;
-	temp.X = ((Options.IsSidebarOnRight || Debug_Map) ? 0 : SidebarClass::SidebarWidth);
+	temp.X = ((Options.IsSidebarOnRight || Debug_Map) ? 0 : SidebarClass::SIDE_WIDTH);
 	temp.Y = 16;
-	temp.Width -= SidebarClass::SidebarWidth;
+	temp.Width -= SidebarClass::SIDE_WIDTH;
 	temp.Height -= 16;
 
-	Allocate_Surfaces(VisibleRect, Rect(0, 0, temp.Width, VisibleRect.Height), Rect(0, 0, temp.Width, VisibleRect.Height), Rect(0, 0, SidebarClass::SidebarWidth, VisibleRect.Height));
+	Allocate_Surfaces(VisibleRect, Rect(0, 0, temp.Width, VisibleRect.Height), Rect(0, 0, temp.Width, VisibleRect.Height), Rect(0, 0, SidebarClass::SIDE_WIDTH, VisibleRect.Height));
 	LogicalSurface = HiddenSurface;
 
 	Map.Set_View_Dimensions(temp);
