@@ -789,8 +789,6 @@ int main(int argc, char ** supplied_argv)
 		Options.ScreenWidth = 640;
 		Options.ScreenHeight = 400;
 
-		int const sidebar = (Options.SidebarPercent > 0) ? Options.SidebarPercent : 100;
-		SidebarClass::Set_Width(SidebarClass::SIDE_WIDTH * sidebar / 100);
 #endif
 
 		int framewidth = Options.ScreenWidth;

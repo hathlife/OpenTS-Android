@@ -145,9 +145,7 @@ OptionsClass::OptionsClass(void) :
 	WindowWidth(-1),
 	WindowHeight(-1),
 	ScaleMode(VIDEO_SCALE_PIXELART),
-	ViewScale(VIDEO_VIEW_FIT),
 	ZoomPercent(0),
-	SidebarPercent(0),
 	VSync(false),
 	Renderer(0),
 	CursorScale(0),
@@ -472,21 +470,14 @@ void OptionsClass::Load_Settings(void)
 	StretchMovies = ConfigINI.Get_Bool("Video", "StretchMovies", StretchMovies);
 	DebugString("StretchMovies is %s\n", StretchMovies == true ? "ON" : "OFF");
 
-	// The boolean key predates the third mode, so it stands for Integer when the newer key
-	// is absent.
-	bool const integersonly = ConfigINI.Get_Bool("Video", "IntegerScaling", false);
-	char viewname[16];
-	ConfigINI.Get_String("Video", "ViewScale",
-		View_Scale_Name(integersonly ? VIDEO_VIEW_INTEGER : ViewScale), viewname, sizeof(viewname));
-	ViewScale = View_Scale_From_Name(viewname, integersonly ? VIDEO_VIEW_INTEGER : ViewScale);
+	ConfigINI.Get_Bool("Video", "IntegerScaling", false);
 
 	char scalename[32];
 	ConfigINI.Get_String("Video", "ScaleMode", (char *)Scale_Mode_Name(ScaleMode), scalename, sizeof(scalename));
 	ScaleMode = Scale_Mode_From_Name(scalename, ScaleMode);
-	DebugString("ScaleMode is %d, ViewScale is %d\n", ScaleMode, ViewScale);
+	DebugString("ScaleMode is %d\n", ScaleMode);
 
 	ZoomPercent = ConfigINI.Get_Int("Video", "Zoom", ZoomPercent);
-	SidebarPercent = ConfigINI.Get_Int("Video", "Sidebar", SidebarPercent);
 
 	CursorScale = ConfigINI.Get_Int("Video", "CursorScale", CursorScale);
 	SystemCursor = ConfigINI.Get_Bool("Video", "SystemCursor", SystemCursor);
@@ -556,10 +547,7 @@ void OptionsClass::Save_Settings (void)
 	ConfigINI.Put_Int("Video", "WindowWidth", WindowWidth);
 	ConfigINI.Put_Int("Video", "WindowHeight", WindowHeight);
 	ConfigINI.Put_String("Video", "ScaleMode", (char *)Scale_Mode_Name(ScaleMode));
-	ConfigINI.Put_String("Video", "ViewScale", (char *)View_Scale_Name(ViewScale));
 	ConfigINI.Put_Int("Video", "Zoom", ZoomPercent);
-	ConfigINI.Put_Int("Video", "Sidebar", SidebarPercent);
-	ConfigINI.Put_Bool("Video", "IntegerScaling", ViewScale == VIDEO_VIEW_INTEGER);
 	ConfigINI.Put_Bool("Video", "VSync", VSync);
 	ConfigINI.Put_Int("Video", "Renderer", Renderer);
 	ConfigINI.Put_Int("Video", "CursorScale", CursorScale);

@@ -103,9 +103,6 @@ void Game_Frame_Sync_To_Content(bool force)
 		Video_Zoom_Frame_Size(width, height);
 	}
 
-	int const sidebar = (Options.SidebarPercent > 0) ? Options.SidebarPercent : 100;
-	SidebarClass::Set_Width(SidebarClass::SIDE_WIDTH * sidebar / 100);
-
 	_BattleFrame = battle;
 
 	if (width != VideoModeWidth || height != VideoModeHeight) {

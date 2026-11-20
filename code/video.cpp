@@ -233,22 +233,6 @@ void Video_Zoom_Frame_Size(int & width, int & height)
 }
 
 
-/// <summary>
-/// The view mode the current content is drawn with.
-/// The intro and the menus are part of the frame, so they fill the window whatever mode the
-/// tactical view is set to; only a running scenario follows the player's choice.
-/// </summary>
-static int Effective_View_Mode(void)
-{
-#if defined(__ANDROID__)
-	if (Movie_Is_Playing() || !ScenarioActive) {
-		return(VIDEO_VIEW_FIT);
-	}
-#endif
-	return(Options.ViewScale);
-}
-
-
 static void Update_Scale_Info(void)
 {
 	_ScaleInfo.GameWidth = VideoModeWidth;
@@ -268,12 +252,6 @@ static void Update_Scale_Info(void)
 	double scaley = (double)_ScaleInfo.DrawableHeight / (double)_ScaleInfo.GameHeight;
 	double scale = (scalex < scaley) ? scalex : scaley;
 
-	int const viewmode = Effective_View_Mode();
-	if (viewmode == VIDEO_VIEW_NATIVE) {
-		scale = 1.0;
-	} else if (viewmode == VIDEO_VIEW_INTEGER && scale >= 1.0) {
-		scale = (double)(int)scale;
-	}
 
 	_ScaleInfo.DestWidth = (int)((double)_ScaleInfo.GameWidth * scale);
 	_ScaleInfo.DestHeight = (int)((double)_ScaleInfo.GameHeight * scale);
@@ -495,12 +473,6 @@ static void Present(void)
 		return;
 	}
 
-	static int lastviewmode = -1;
-	if (Effective_View_Mode() != lastviewmode) {
-		lastviewmode = Effective_View_Mode();
-		Update_Scale_Info();
-		Refresh_Mouse_Pointer();
-	}
 	if (Main_Window_Minimized()) {
 		return;
 	}

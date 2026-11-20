@@ -182,23 +182,10 @@ class OptionsClass {
 		int ScaleMode;
 
 		/*
-		 * How the frame is fitted into the window, as one of the VideoViewMode values. Fit
-		 * scales it to the window, Integer keeps every game pixel the same size, and Native
-		 * draws it one pixel per pixel.
-		 */
-		int ViewScale;
-
-		/*
 		 * How much a battle is magnified, in percent of the 640x400 base frame, or zero for
 		 * 100%. The frame shrinks by that factor and the presenter fills the window with it.
 		 */
 		int ZoomPercent;
-
-		/*
-		 * How wide the sidebar is drawn, in percent of its artwork, or zero for 100%. A
-		 * narrower sidebar leaves more of a zoomed battle frame to the battlefield.
-		 */
-		int SidebarPercent;
 
 		/*
 		 * If presents are to wait for the display's refresh, then this flag will be true.
