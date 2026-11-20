@@ -94,6 +94,7 @@ class UIShellClass
 		bool Active(void) const;
 		bool Documents_Visible(void) const;
 		bool Text_Input_Focused(void) const;
+		void Update_Text_Input(void);
 		void Apply_Dimensions(void);
 		void Drop_Cached_Files(void);
 		UIPointerPosition Pointer_Position(int x, int y) const;
@@ -160,4 +161,8 @@ class UIShellClass
 		bool DevWasActive = false;
 
 		int ArtMagnification = 1;
+
+		// Whether the platform was asked for typed text, which raises the soft keyboard on
+		// Android, so a field gaining and losing the focus does it only once.
+		bool TextInputShown = false;
 };

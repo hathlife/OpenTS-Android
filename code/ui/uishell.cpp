@@ -10,6 +10,7 @@
 #include "ui/uishell.h"
 
 #include "dbgprint.h"
+#include "sdl/sdlwindow.h"
 
 #include "ui/dev/uidev.h"
 #include "ui/rml/rmlkeys.h"
@@ -209,6 +210,26 @@ bool UIShellClass::Text_Input_Focused(void) const
 
 	Rml::String const & tag = focus->GetTagName();
 	return(tag == "input" || tag == "textarea");
+}
+
+
+/// <summary>
+/// Asks the platform for typed text while an editable field has the focus, which is what
+/// raises the soft keyboard on Android, and gives it back when the focus leaves.
+/// </summary>
+void UIShellClass::Update_Text_Input(void)
+{
+	bool const typing = Text_Input_Focused();
+	if (typing == TextInputShown) {
+		return;
+	}
+
+	TextInputShown = typing;
+	if (typing) {
+		Main_Window_Start_Text_Input();
+	} else {
+		Main_Window_Stop_Text_Input();
+	}
 }
 
 
@@ -702,6 +723,8 @@ void UIShellClass::Tick(void)
 		UIDev_Tick();
 	}
 
+	Update_Text_Input();
+
 	for (UIViewClass * view : Modals) {
 		view->Placed();
 	}
@@ -1086,6 +1109,12 @@ UIResult UIShellClass::Run_Modal(UIViewClass & view, UIServiceCallback const & s
 	ModalClosing = true;
 	if (Ready && Input.Gesture_Owner() != UI_INPUT_NONE) {
 		Drop_Presses();
+	}
+
+	// A field that had the keyboard gives it back with the screen that held it.
+	if (TextInputShown) {
+		TextInputShown = false;
+		Main_Window_Stop_Text_Input();
 	}
 	Input.Cancel_UI();
 	view.Presenter().Discard();
