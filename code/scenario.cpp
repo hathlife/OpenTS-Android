@@ -1794,7 +1794,7 @@ void Multiplayer_Last_Minute_Fixups(bool official)
 /// <returns>bool; Was the scenario read successfully?</returns>
 ScenarioState Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen)
 {
-	char buffer[32];
+	char buffer[_MAX_FNAME + _MAX_EXT];
 
 	ScenarioInit++;
 
@@ -2141,7 +2141,10 @@ ScenarioState Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen)
 
 	if (Session.Type == GAME_NORMAL) {
 		_splitpath(Scen->ScenarioName, NULL, NULL, buffer, NULL);
-		strcat(buffer, ".INI");
+		size_t const used = strlen(buffer);
+		if (used + 4 < sizeof(buffer)) {
+			memcpy(buffer + used, ".INI", 5);
+		}
 		cfile.Set_Name(buffer);
 
 		// When this is the scenario file itself, a restart must apply what the launch applied.
