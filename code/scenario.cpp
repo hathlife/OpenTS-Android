@@ -1461,6 +1461,9 @@ void Do_Lose(void)
 void Do_Restart(void)
 {
 	ScenarioActive = false;
+	// The load screen is a 640 by 400 picture, so it needs the base frame rather than the
+	// battlefield's zoomed one to fill the panel.
+	Game_Frame_Sync_To_Content(true);
 	TacticalActive = false;
 
 	Scen->ElapsedTimer.Stop();
@@ -1500,6 +1503,7 @@ void Do_Restart(void)
 void Do_Abort(void)
 {
 	ScenarioActive = false;
+	Game_Frame_Sync_To_Content(true);
 	TacticalActive = false;
 
 	Scen->ElapsedTimer.Stop();
