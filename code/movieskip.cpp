@@ -59,6 +59,7 @@ namespace MovieSkip
 		{
 			bool IsActive = false;
 			bool IsEva = false;
+			bool TouchWasDown = false;
 			unsigned int Movie = 0;
 			unsigned int Instance = 0;
 			std::array<bool, MAX_PLAYERS> Votes = {};
@@ -180,6 +181,11 @@ namespace MovieSkip
 	{
 		State = VoteState();
 		State.IsEva = Is_Eva_Movie(name);
+#if defined(__ANDROID__)
+		// The contact that opened the screen may still be down; only a fresh press on the
+		// running film ends it.
+		State.TouchWasDown = Touch_Button_Down(SDL_BUTTON_LEFT);
+#endif
 
 		if (!Is_Network_Game()) {
 			return;
@@ -235,10 +241,12 @@ namespace MovieSkip
 		// A touchscreen offers no Escape key, so a contact ends the film the way the key does.
 		// A mouse the player plugged in keeps to the desktop rule, and EVA's own transmission
 		// is left to play out.
-		if (!escape && !State.IsEva && Touch_Button_Down(SDL_BUTTON_LEFT)) {
+		bool const touch = Touch_Button_Down(SDL_BUTTON_LEFT);
+		if (!escape && !State.IsEva && touch && !State.TouchWasDown) {
 			DebugString("Movie skip: a touch ends the film.\n");
 			escape = true;
 		}
+		State.TouchWasDown = touch;
 #endif
 
 		if (!State.IsActive) {
