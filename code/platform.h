@@ -835,6 +835,10 @@ int ftime(struct timeb * t);
 
 DWORD GetLastError(void);
 void SetLastError(DWORD error);
+
+// Names a code this layer's errno mapping produced, standing in for the Win32 helper that
+// dbgprint offers only on Windows.
+char const * Last_Error_Text(unsigned long error);
 HANDLE GetCurrentProcess(void);
 DWORD GetCurrentProcessId(void);
 DWORD GetCurrentThreadId(void);
@@ -979,6 +983,20 @@ inline int GetTimeFormat(DWORD locale, DWORD flags, SYSTEMTIME const * time, cha
 	return(GetTimeFormatA(locale, flags, time, format, buffer, size));
 }
 unsigned int _controlfp(unsigned int value, unsigned int mask);
+
+// Control-word bits the runtime's float state code names. Only the rounding mode means
+// anything off x86, where the rest of the word has no register to live in.
+#define _MCW_EM 0x0008001F
+#define _MCW_RC 0x00000300
+#define _MCW_PC 0x00030000
+#define _MCW_DN 0x03000000
+#define _RC_NEAR 0x00000000
+#define _RC_DOWN 0x00000100
+#define _RC_UP 0x00000200
+#define _RC_CHOP 0x00000300
+#define _CW_DEFAULT 0x0008001F
+
+unsigned int _controlfp_s(unsigned int * current, unsigned int value, unsigned int mask);
 int _getch(void);
 DWORD FormatMessageA(DWORD flags, void const * source, DWORD message, DWORD language, char * buffer, DWORD size, void * arguments);
 inline DWORD FormatMessage(DWORD flags, void const * source, DWORD message, DWORD language, char * buffer, DWORD size, void * arguments)

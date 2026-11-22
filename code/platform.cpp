@@ -12,6 +12,7 @@
 #include "platform.h"
 
 #include <cerrno>
+#include <cfenv>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
@@ -319,6 +320,47 @@ DWORD GetLastError(void)
 void SetLastError(DWORD error)
 {
 	LastError = error;
+}
+
+
+char const * Last_Error_Text(unsigned long error)
+{
+	static thread_local char message[128];
+
+	char const * text = NULL;
+	switch (error) {
+		case ERROR_FILE_NOT_FOUND:
+			text = "the file does not exist";
+			break;
+
+		case ERROR_ACCESS_DENIED:
+			text = "access denied";
+			break;
+
+		case ERROR_INVALID_HANDLE:
+			text = "the handle is not valid";
+			break;
+
+		case ERROR_FILE_EXISTS:
+		case ERROR_ALREADY_EXISTS:
+			text = "the name already exists";
+			break;
+
+		case ERROR_INSUFFICIENT_BUFFER:
+			text = "the buffer is too small";
+			break;
+
+		default:
+			break;
+	}
+
+	if (text != NULL) {
+		std::snprintf(message, sizeof(message), "%s", text);
+	} else {
+		std::snprintf(message, sizeof(message), "system error %lu", error);
+	}
+
+	return(message);
 }
 
 
@@ -1502,6 +1544,41 @@ int GetTimeFormatA(DWORD, DWORD flags, SYSTEMTIME const * time, char const *, ch
 unsigned int _controlfp(unsigned int, unsigned int)
 {
 	return(0x0009001Fu);
+}
+
+
+unsigned int _controlfp_s(unsigned int * current, unsigned int value, unsigned int mask)
+{
+	if ((mask & _MCW_RC) != 0) {
+		switch (value & _MCW_RC) {
+			case _RC_NEAR:
+				std::fesetround(FE_TONEAREST);
+				break;
+
+			case _RC_DOWN:
+				std::fesetround(FE_DOWNWARD);
+				break;
+
+			case _RC_UP:
+				std::fesetround(FE_UPWARD);
+				break;
+
+			case _RC_CHOP:
+				std::fesetround(FE_TOWARDZERO);
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	std::feclearexcept(FE_ALL_EXCEPT);
+
+	if (current != NULL) {
+		*current = _controlfp(0, 0);
+	}
+
+	return(0);
 }
 
 

@@ -583,7 +583,12 @@ int main(int argc, char ** supplied_argv)
 	ProgramInstance = instance;
 #endif
 
+#if defined(_WIN32)
 	Debug_Init();
+#else
+	char const ** const debug_argv = const_cast<char const **>(supplied_argv);
+	Debug_Init(argc, debug_argv);
+#endif
 
 	// Handed over now because the exception path may not ask the logger for anything: the
 	// thread that crashed may be the one holding the logger's lock.
