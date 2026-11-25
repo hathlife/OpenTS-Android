@@ -37,7 +37,11 @@
 #include <string>
 #include <system_error>
 #include <variant>
+#if defined(_WIN32)
 #include <windows.h>
+#else
+#include "win.h"
+#endif
 
 
 namespace {
